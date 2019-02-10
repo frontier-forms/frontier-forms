@@ -1,8 +1,8 @@
 ## React Formidable forms
 
-### Philosophy
-
 > Formidable, the smartest React forms
+
+### Motivation
 
 The `Formidable` forms library came from a simple idea.
 
@@ -14,6 +14,15 @@ repetitive work to focus on what matter the most, __your application added value
 
 This last block is: _"fields declaration and validation"_.
 This logic, shared with the back-end (API) is too often repetitive code and work.
+
+### Influences
+
+Charly (@wittydevelopr) worked on a SPA that included 15+ forms with different layout and complexity.
+This is when he discovered [`react-jsonschema-form`](https://github.com/mozilla-services/react-jsonschema-form) and choose to create an alternative, GraphQL based called
+[`react-apollo-form`](https://github.com/wittydeveloper/react-apollo-form).
+
+`Formidable` forms is a official revamp of [`react-apollo-form`](https://github.com/wittydeveloper/react-apollo-form),
+providing a simpler and cleaner API for a perfect Developer eXperience (`DX`).
 
 
 ### How it looks

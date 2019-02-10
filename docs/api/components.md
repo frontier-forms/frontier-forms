@@ -25,13 +25,18 @@ const mutation = gql`
 
 
 ```ts
-import { FormidableKit } from 'react-formidable';
+import { Formidable } from 'react-formidable';
+import { StringFieldComponent } from './ui-kit';
 import gql from 'graphql-tag';
 
 const mutation = gql`
     mutation myMutation(user: UserInputType) {}
 `;
 
-<FormidableKit client={myApolloClient} mutation={mutation} kit={kit} />
+const kit = {
+    StringField: StringFieldComponent
+}
+
+<Formidable client={myApolloClient} mutation={mutation} kit={kit} />
 
 ```

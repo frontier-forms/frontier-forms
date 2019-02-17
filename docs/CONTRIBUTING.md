@@ -9,16 +9,29 @@ with the project.
 
 ## Commits
 
-Project is following the semantic commit messages with emoji twist, based on the
-type of work done prefix commit message with one of the following:
-  * ⭐️ for commits related to adding new features.
-  * 📦 for commits related to packaging, distribution and bundling.
-  * 🛠 for commits related to fixing broken code.
-  * 🧹 for commits that are just chores.
-  * 📝 for commits related to adding and maintaining documentation.
-  * ♻️ for commits related to refactoring code and making it work better.
-  * 🔍 for commits related to writing or fixing tests.
-  * 🌈 for commits related to making your code or your app beautiful with style changes.
+Project is following the semantic commit messages convention [from the Angular project](https://gist.github.com/stephenparish/9941e89d80e2bc58a153).
+Commit shoud follow this format:
+
+```
+<type>(<scope>): <subject>
+<BLANK LINE>
+<body>
+<BLANK LINE>
+<footer>
+```
+
+`type` can be one of the following:
+  * feat (feature), for commits related to adding new features.
+  * fix (bug fix), for commits related to fixing broken code.
+  * docs (documentation), for commits related to adding and maintaining documentation.
+  * style, for commits related to making your code or your app beautiful with style changes.
+  * refactor, for commits related to refactoring code and making it work better.
+  * test, for commits related to writing or fixing tests.
+  * chore (maintain), for commits related to packaging, distribution and bundling.
+
+`scope` could be anything specifying place of the commit change. For example `schema`, `validation`, `state` etc...
+
+
 
 ## Pull Request Process
 

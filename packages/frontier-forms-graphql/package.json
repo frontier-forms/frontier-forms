@@ -22,5 +22,8 @@
   },
   "bugs": {
     "url": "https://github.com/frontier-forms/frontier-forms/issues"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

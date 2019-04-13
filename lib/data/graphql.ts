@@ -132,7 +132,7 @@ export function getMutationNameFromDocumentNode(mutation: DocumentNode): string 
         return null;
       }
     } else {
-      console.warn(`please provide a mutation document, received a ${definition.kind} document`)
+      console.warn(`please provide a mutation document, received a ${definition.kind === 'OperationDefinition' ? definition.operation : definition.kind} document`)
       return null;
     }
   }

@@ -3,19 +3,63 @@ import { FrontierDataProps, schemaFromDataProps } from "../data";
 import { JSONSchema7 } from "json-schema";
 import { FormApi, FieldState } from "final-form";
 import { getFormFromSchema } from "../core/core";
+import { each, set, partition, includes } from "lodash";
+
+// only keep readonly `FieldState` attributes, exclude modifiers functions
+export type FieldStateReadOnly = Readonly<{
+  [k in keyof FieldState]: FieldState[k] extends Function ? never : FieldState[k]
+}>;
+
+// only keep function `FieldState` attributes, exclude readonly attributes
+export type FieldStateModifiers = {
+  [k in keyof FieldState]: FieldState[k] extends Function ? FieldState[k] : never
+};
+
+export interface FrontierRenderProps {
+  form: FormApi;
+  state: {
+    [k: string]: FieldStateReadOnly;
+  },
+  modifiers: {
+    [k: string]: FieldStateModifiers;
+    // save: () => void;
+  },
+  // kit: {
+  //   [k: string]: UIKitComponent;
+  // }
+}
+
+const MODIFIERS_KEY: string[] = ['blur', 'focus', 'change'];
 
 export interface FrontierProps extends FrontierDataProps {
   uiKit?: {};
-  initialValues?: {}
+  initialValues?: {};
+  onSave?: (values: object) => void;
+
+  children: ({ modifiers, state, /* kit */ }: FrontierRenderProps) => JSX.Element;
+};
+
+export interface FrontierState {
+  schema?: JSONSchema7;
+  form?: FormApi;
 }
 
-export class Frontier extends Component<FrontierProps> {
-  schema: JSONSchema7;
-  form: FormApi;
+export class Frontier extends Component<FrontierProps, FrontierState> {
+  state: FrontierState = {};
 
-  componentDidMount() {
-    this.schema = schemaFromDataProps(this.props);
-    this.form = getFormFromSchema(this.schema, this.onSubmit, this.onFieldUpdate);
+  componentDidMount () {
+    const schema = schemaFromDataProps(this.props);
+    const form = getFormFromSchema(
+      schema,
+      this.onSubmit,
+      this.onFieldUpdate,
+      this.props.initialValues || {}
+    );
+    this.setState({ schema, form });
+  }
+
+  componentWillReceiveProps (nextProps) {
+    // TODO
   }
 
   onSubmit = (values: object) => {
@@ -24,12 +68,33 @@ export class Frontier extends Component<FrontierProps> {
 
   onFieldUpdate = (fieldName: string, state: FieldState) => { }
 
-  renderProps() {
-    return {};
+  renderProps (): FrontierRenderProps {
+    // `state`, `modifiers` and `kit`
+    const fields = this.state.form.getRegisteredFields();
+    let state = {};
+    let modifiers = {};
+
+    each(fields, (fieldPath) => {
+      const fieldState = this.state.form.getFieldState(fieldPath);
+      each(fieldState, (v, k) => {
+        set(includes(MODIFIERS_KEY, k) ? modifiers : state, `${fieldPath}.${k}`, v)
+      })
+    });
+
+    return {
+      form: this.state.form,
+      state,
+      modifiers,
+      // kit: createRenderPropsKit(),
+    };
   }
 
-  render() {
-    const child = Children.only(this.props.children) as (p: any) => JSX.Element;
+  render () {
+    if (!this.state.form) {
+      return null;
+    }
+
+    const child = this.props.children;
     if (child) {
       if (typeof child !== 'function') {
         // if (process.env.NODE_ENV !== 'production') {
@@ -39,7 +104,7 @@ export class Frontier extends Component<FrontierProps> {
         // }
         return null;
       } else {
-        return child(this.renderProps);
+        return child(this.renderProps());
       }
     } else {
       return null; // ui-kit

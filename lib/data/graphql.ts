@@ -152,7 +152,7 @@ export function buildFormSchema(schema: JSONSchema7, mutation: DocumentNode): JS
   }
 
   const args = mutationSchema.properties.arguments as JSONSchema7;
-  if (args) {
+  if (args && args.properties && Object.keys(args.properties).length > 0) {
     return formPropertiesReducer(args, schema);
   } else {
     console.warn(`mutation ${mutationName} has no arguments`)
@@ -169,6 +169,9 @@ function formPropertiesReducer(schema, referenceSchema): JSONSchema7 {
         if (get(value, '$ref')) {
           const refTypeName = get(value, '$ref').replace('#/definitions/', '');
           const refType = referenceSchema.definitions[refTypeName];
+          if (!refType) {
+            console.warn(`unknown $ref "${refTypeName}" for ${key}`);
+          }
           result[key] = refType ? cloneDeep(formPropertiesReducer(refType, referenceSchema)) : {};
         } else {
           result[key] = has(value, 'properties') ?

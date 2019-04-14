@@ -28,7 +28,7 @@ describe('schemaFromGraphQLProps', () => {
             }
           }
       `,
-        schema: require('../../../fixtures/data/todo-jsonschema.json')
+        schema: require('../../../fixtures/data/tests-jsonschema.json')
       };
 
       expect(schemaFromGraphQLProps(props)).toEqual({

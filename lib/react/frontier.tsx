@@ -1,28 +1,27 @@
 import { Component, Children, createElement, ReactChildren } from "react";
 import { FrontierDataProps, schemaFromDataProps } from "../data";
 import { JSONSchema7 } from "json-schema";
-import { FormApi, FieldState } from "final-form";
+import { FormApi, FieldState, FormSubscription, formSubscriptionItems, FormState, Unsubscribe } from "final-form";
 import { getFormFromSchema } from "../core/core";
-import { each, set, partition, includes } from "lodash";
+import { each, set, isEqual, includes } from "lodash";
+import { timingSafeEqual } from "crypto";
 
-// only keep readonly `FieldState` attributes, exclude modifiers functions
-export type FieldStateReadOnly = Readonly<{
-  [k in keyof FieldState]: FieldState[k] extends Function ? never : FieldState[k]
-}>;
+export const allFormSubscriptionItems: FormSubscription = formSubscriptionItems.reduce(
+  (result, key) => {
+    result[key] = true
+    return result
+  },
+  {}
+)
 
-// only keep function `FieldState` attributes, exclude readonly attributes
-export type FieldStateModifiers = {
-  [k in keyof FieldState]: FieldState[k] extends Function ? FieldState[k] : never
-};
 
 export interface FrontierRenderProps {
   form: FormApi;
-  state: {
-    [k: string]: FieldStateReadOnly;
-  },
+  state: FormState,
   modifiers: {
-    [k: string]: FieldStateModifiers;
-    // save: () => void;
+    change: (value: any) => void;
+    focus: () => void;
+    blur: () => void;
   },
   // kit: {
   //   [k: string]: UIKitComponent;
@@ -40,26 +39,61 @@ export interface FrontierProps extends FrontierDataProps {
 };
 
 export interface FrontierState {
-  schema?: JSONSchema7;
-  form?: FormApi;
+  formState?: FormState;
 }
 
 export class Frontier extends Component<FrontierProps, FrontierState> {
   state: FrontierState = {};
+  form?: FormApi;
+  mounted: boolean = false;
+  formSubscription?: Unsubscribe;
 
-  componentDidMount () {
+  // Greatly inspired from the awesome https://github.com/final-form/react-final-form library
+  constructor(props) {
+    super(props);
+
     const schema = schemaFromDataProps(this.props);
     const form = getFormFromSchema(
       schema,
       this.onSubmit,
-      this.onFieldUpdate,
       this.props.initialValues || {}
     );
-    this.setState({ schema, form });
+    form.subscribe(
+      initialState => {
+        this.state = { formState: initialState };
+      },
+      allFormSubscriptionItems
+    )(); // unsubscribe immediatly
   }
 
-  componentWillReceiveProps (nextProps) {
-    // TODO
+  componentDidMount () {
+    if (this.form) {
+      this.formSubscription = this.form.subscribe(
+        formState => {
+          if (this.mounted) {
+            this.setState({ formState })
+          }
+          this.mounted = true;
+        },
+        allFormSubscriptionItems
+      )
+    }
+  }
+
+  componentWillMount () {
+    if (this.formSubscription) {
+      this.formSubscription();
+    }
+    this.mounted = false;
+  }
+
+  componentDidUpdate (prevProps) {
+    // initialValues changed
+    if (!isEqual(this.props.initialValues, prevProps.initialValues)) {
+      this.form.initialize(this.props.initialValues);
+    }
+
+    // TODO: handle mutation or schema change?
   }
 
   onSubmit = (values: object) => {
@@ -70,27 +104,33 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
 
   renderProps (): FrontierRenderProps {
     // `state`, `modifiers` and `kit`
-    const fields = this.state.form.getRegisteredFields();
-    let state = {};
-    let modifiers = {};
+    const { formState } = this.state;
 
+    let modifiers: any = {};
+
+    const fields = this.form.getRegisteredFields();
     each(fields, (fieldPath) => {
-      const fieldState = this.state.form.getFieldState(fieldPath);
-      each(fieldState, (v, k) => {
-        set(includes(MODIFIERS_KEY, k) ? modifiers : state, `${fieldPath}.${k}`, v)
-      })
+      each('focus', 'blur', 'change', action => {
+        set(
+          modifiers,
+          `${fieldPath}.${action}`,
+          (...args) => {
+            this.form[action](fieldPath, ...args);
+          }
+        )
+      });
     });
 
     return {
-      form: this.state.form,
-      state,
+      form: this.form,
+      state: this.state.formState,
       modifiers,
       // kit: createRenderPropsKit(),
     };
   }
 
   render () {
-    if (!this.state.form) {
+    if (!this.state.formState) {
       return null;
     }
 

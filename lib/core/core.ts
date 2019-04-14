@@ -3,7 +3,7 @@ import { JSONSchema7 } from "json-schema";
 import { FormApi, createForm, Config, FieldSubscription, fieldSubscriptionItems, FieldState } from "final-form";
 import { each, set } from "lodash";
 
-const allFieldSubscriptionItems: FieldSubscription = fieldSubscriptionItems.reduce((result, key) => {
+export const allFieldSubscriptionItems: FieldSubscription = fieldSubscriptionItems.reduce((result, key) => {
   result[key] = true
   return result
 }, {})
@@ -14,7 +14,6 @@ export type OnFieldUpdateCallback = (fieldName: string, state: FieldState) => vo
 export function getFormFromSchema (
   schema: JSONSchema7,
   onSubmit: Config['onSubmit'],
-  onFieldUpdate: OnFieldUpdateCallback,
   initialValues = {}
 ): FormApi {
   const form = createForm({
@@ -23,25 +22,25 @@ export function getFormFromSchema (
     initialValues
   });
 
-  registerFields(form, schema, onFieldUpdate);
+  registerFields(form, schema);
 
   return form;
 }
 
-function registerFields (form: FormApi, schema: JSONSchema7, onFieldUpdate: OnFieldUpdateCallback, namespace?: string) {
+// FIXME: find a nice way to handle field unsubscribe!
+function registerFields (form: FormApi, schema: JSONSchema7, namespace?: string) {
   each(schema.properties, (value, key) => {
     const pathKey = namespace ? `${namespace}.${key}` : key;
     if (value.type === 'object') {
       registerFields(
         form,
         value,
-        onFieldUpdate,
         pathKey
       );
     } else {
       form.registerField(
         pathKey,
-        (state: FieldState) => onFieldUpdate(pathKey, state),
+        () => { },
         allFieldSubscriptionItems
       );
     }

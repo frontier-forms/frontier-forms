@@ -37,7 +37,6 @@ describe('Frontier Core', () => {
       const form = getFormFromSchema(
         formSchema,
         jest.fn(),
-        jest.fn(),
         {
           todo: {
             name: 'Write tests for Frontier Core'
@@ -52,45 +51,6 @@ describe('Frontier Core', () => {
     })
   })
 
-  describe('when providing a valid `schema` and `mutation` and updating a field value', () => {
-    it('should return a register proper fields and forward the update to `onFieldUpdate` argument', () => {
-      const schema = require('../../../fixtures/data/tests-jsonschema.json');
-      const mutation = gql`
-          mutation createTodo($todo: TodoInputType!) {
-            create_todo(todo: $todo) {
-              id
-            }
-          }
-      `;
-
-      const onFieldUpdate = jest.fn();
-
-      const formSchema = buildFormSchema(schema, mutation);
-      const form = getFormFromSchema(
-        formSchema,
-        jest.fn(),
-        onFieldUpdate
-      );
-
-      expect(form.getRegisteredFields()).toContain('todo.name');
-      expect(form.getRegisteredFields()).toContain('todo.completed');
-
-      onFieldUpdate.mockReset();
-
-      form.change('todo.completed', true);
-
-      expect(onFieldUpdate).toHaveBeenCalledWith(
-        'todo.completed',
-        expect.objectContaining({
-          value: true,
-          dirty: true,
-          pristine: false,
-          name: 'todo.completed'
-        })
-      )
-    })
-  })
-
   describe('when providing a valid `schema` and `mutation` and updating a field with incorrect value', () => {
     it('should return a register proper fields and forward the update to `onFieldUpdate` argument and run validations', () => {
       const schema = require('../../../fixtures/data/tests-jsonschema.json');
@@ -102,13 +62,10 @@ describe('Frontier Core', () => {
           }
       `;
 
-      const onFieldUpdate = jest.fn();
-
       const formSchema = buildFormSchema(schema, mutation);
       const form = getFormFromSchema(
         formSchema,
         jest.fn(),
-        onFieldUpdate,
         {
           todo: {
             name: 'My 1st todo',
@@ -120,12 +77,9 @@ describe('Frontier Core', () => {
       expect(form.getRegisteredFields()).toContain('todo.name');
       expect(form.getRegisteredFields()).toContain('todo.completed');
 
-      onFieldUpdate.mockReset();
-
       form.change('todo.completed', 'completed');
 
-      expect(onFieldUpdate).toHaveBeenCalledWith(
-        'todo.completed',
+      expect(form.getFieldState('todo.completed')).toEqual(
         expect.objectContaining({
           value: 'completed',
           error: 'should be boolean',

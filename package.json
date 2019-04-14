@@ -2,7 +2,7 @@
   "name": "frontier-forms",
   "version": "0.0.1",
   "description": "The smartest web-forms.",
-  "main": "index.js",
+  "main": "dist/index.js",
   "repository": "git@github.com:frontier-forms/frontier-forms.git",
   "author": "Charly POLY <cpoly55@gmail.com>, Tom Chmelevskij <T.Chmelevskij@gmail.com>",
   "homepage": "https://frontier-forms.dev",
@@ -10,7 +10,8 @@
   "private": false,
   "scripts": {
     "test": "jest",
-    "release": "standard-version"
+    "build": "tsc",
+    "release": "tsc; standard-version"
   },
   "dependencies": {
     "ajv": "^6.10.0",

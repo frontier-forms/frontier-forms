@@ -32,7 +32,7 @@ xdescribe("<Frontier> usage with render props", () => {
               }
               <p>
                 <label htmlFor="name">Name*</label> <br />
-                <input type="text" name="name" value={state.todo.value} onChange={modifiers.todo.change} />
+                <input type="text" name="name" value={state.values.todo.name} /* onChange={modifiers.todo.change} */ />
               </p>
               <p>
                 <input type="submit" value="Save" />

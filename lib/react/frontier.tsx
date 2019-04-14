@@ -14,15 +14,20 @@ export const allFormSubscriptionItems: FormSubscription = formSubscriptionItems.
   {}
 )
 
+export interface Modifiers {
+  change: (value: any) => void;
+  focus: () => void;
+  blur: () => void;
+}
+
+export type ModifiersField = {
+  [k: string]: ModifiersField | Modifiers;
+}
 
 export interface FrontierRenderProps {
   form: FormApi;
   state: FormState,
-  modifiers: {
-    change: (value: any) => void;
-    focus: () => void;
-    blur: () => void;
-  },
+  modifiers: ModifiersField,
   // kit: {
   //   [k: string]: UIKitComponent;
   // }
@@ -53,12 +58,12 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
     super(props);
 
     const schema = schemaFromDataProps(this.props);
-    const form = getFormFromSchema(
+    this.form = getFormFromSchema(
       schema,
       this.onSubmit,
       this.props.initialValues || {}
     );
-    form.subscribe(
+    this.form.subscribe(
       initialState => {
         this.state = { formState: initialState };
       },
@@ -110,7 +115,7 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
 
     const fields = this.form.getRegisteredFields();
     each(fields, (fieldPath) => {
-      each('focus', 'blur', 'change', action => {
+      each(['focus', 'blur', 'change'], action => {
         set(
           modifiers,
           `${fieldPath}.${action}`,

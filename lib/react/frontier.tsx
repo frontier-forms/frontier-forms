@@ -1,6 +1,8 @@
 import { Component, Children, createElement, ReactChildren } from "react";
 import { FrontierDataProps, schemaFromDataProps } from "../data";
 import { JSONSchema7 } from "json-schema";
+import { FormApi, FieldState } from "final-form";
+import { getFormFromSchema } from "../core/core";
 
 export interface FrontierProps extends FrontierDataProps {
   uiKit?: {};
@@ -9,13 +11,20 @@ export interface FrontierProps extends FrontierDataProps {
 
 export class Frontier extends Component<FrontierProps> {
   schema: JSONSchema7;
+  form: FormApi;
 
   componentDidMount() {
     this.schema = schemaFromDataProps(this.props);
-    // this.form = ...
+    this.form = getFormFromSchema(this.schema, this.onSubmit, this.onFieldUpdate);
   }
 
-  renderProps () {
+  onSubmit = (values: object) => {
+    // call Frontier Data save handler 
+  }
+
+  onFieldUpdate = (fieldName: string, state: FieldState) => { }
+
+  renderProps() {
     return {};
   }
 

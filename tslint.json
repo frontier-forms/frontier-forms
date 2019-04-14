@@ -64,6 +64,7 @@
     "no-trailing-whitespace": false,
     "no-unused-expression": true,
     "no-unused-variable": true,
+    "no-duplicate-imports": true,
     "no-use-before-declare": true,
     "one-line": [
       true,
@@ -83,7 +84,7 @@
       "always"
     ],
     "switch-default": true,
-    "trailing-comma": false,
+    "trailing-comma": true,
     "triple-equals": true,
     "no-null-keyword": false,
     "typedef": [

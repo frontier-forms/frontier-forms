@@ -1,9 +1,9 @@
 import gql from 'graphql-tag';
-import { schemaFromGraphQLProps } from './graphql';
+import { schemaFromGraphQLProps } from '../graphql';
 
 describe('given a valid GraphQL mutation document', () => {
   it('should return the proper Form Schema', () => {
-    const schema = require('../../fixtures/data/todo-jsonschema.json');
+    const schema = require('../../../fixtures/data/todo-jsonschema.json');
 
     const mutation = gql`
         mutation createTodo($todo: TodoInputType!) {
@@ -49,7 +49,7 @@ describe('given a invalid GraphQL query document', () => {
   });
 
   it('should return an empty Form Schema and warn the developer', () => {
-    const schema = require('../../fixtures/data/todo-jsonschema.json');
+    const schema = require('../../../fixtures/data/todo-jsonschema.json');
 
     const mutation = gql`
         query getTodos {
@@ -75,7 +75,7 @@ describe('given a unknown GraphQL mutation document', () => {
   });
 
   it('should return an empty Form Schema and warn the developer', () => {
-    const schema = require('../../fixtures/data/todo-jsonschema.json');
+    const schema = require('../../../fixtures/data/todo-jsonschema.json');
 
     const mutation = gql`
         mutation updateOrCreateTodo($todo: TodoInputType!) {

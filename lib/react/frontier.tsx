@@ -79,6 +79,7 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
   }
 
   componentDidMount () {
+    this.mounted = true;
     if (this.form) {
       this.subscribeToForm();
     }
@@ -90,7 +91,6 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
         if (this.mounted) {
           this.setState({ formState })
         }
-        this.mounted = true;
       },
       allFormSubscriptionItems
     )

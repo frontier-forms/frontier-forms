@@ -1,6 +1,9 @@
 import { JSONSchema7 } from 'json-schema';
 import { DocumentNode, FieldNode } from 'graphql';
-import { omit, pick, reduce, cloneDeep, has, get } from 'lodash';
+import { reduce, cloneDeep, has, get } from 'lodash';
+import { ApolloClient } from "apollo-client";
+import { introspectionQuery } from './introspectionQuery';
+import { fromIntrospectionQuery } from "graphql-2-json-schema";
 
 // Given a GQL client and a mutation, should return a JSON Schema including definitions and the mutation
 
@@ -8,23 +11,30 @@ export type GraphQLClient = { query: () => any };
 
 export interface FrontierDataGraphQLProps {
   mutation: DocumentNode;
-  client?: GraphQLClient; // ApolloClient<any>;
+  client: ApolloClient<any>;
   schema?: JSONSchema7;
 }
 
+export type SchemaFromGraphQLPropsReturn = JSONSchema7 | null;
 // Given GraphQL data props, return a valid form JSONSchema (or null)
-export function schemaFromGraphQLProps(props: FrontierDataGraphQLProps): JSONSchema7 | null {
+export function schemaFromGraphQLProps (props: FrontierDataGraphQLProps): Promise<SchemaFromGraphQLPropsReturn> {
   if (props.mutation) {
     if (props.schema) {
-      return buildFormSchema(props.schema, props.mutation);
+      return Promise.resolve(buildFormSchema(props.schema, props.mutation));
     } else if (props.client) {
-      // TODO
-      return null;
+      return props.client.query({ query: introspectionQuery }).then(result => {
+        if (result.errors) {
+          console.log(`Unable to fetch GraphQL schema: ${result.errors}`);
+          return null;
+        } else {
+          return fromIntrospectionQuery(result.data) as JSONSchema7;
+        }
+      })
     } else {
-      return null;
+      return Promise.resolve(null);
     }
   } else {
-    return null;
+    return Promise.resolve(null);
   }
 }
 
@@ -112,7 +122,7 @@ export function schemaFromGraphQLProps(props: FrontierDataGraphQLProps): JSONSch
 //       "end": 137
 //   }
 // }
-export function getMutationNameFromDocumentNode(mutation: DocumentNode): string | null {
+export function getMutationNameFromDocumentNode (mutation: DocumentNode): string | null {
   if (mutation.definitions.length > 1) {
     console.warn("please provide 1 mutation document")
     return null;
@@ -139,19 +149,19 @@ export function getMutationNameFromDocumentNode(mutation: DocumentNode): string 
 }
 
 // Given a GraphQL schema JSON Schema and a mutation, return a form schema
-export function buildFormSchema(schema: JSONSchema7, mutation: DocumentNode): JSONSchema7 {
+export function buildFormSchema (schema: JSONSchema7, mutation: DocumentNode): JSONSchema7 {
   const mutationName = getMutationNameFromDocumentNode(mutation);
   if (!mutationName) {
     return {};
   }
 
-  const mutationSchema = (schema.properties.Mutation as JSONSchema7).properties[mutationName] as JSONSchema7;
+  const mutationSchema = (schema.properties!.Mutation as JSONSchema7).properties![mutationName] as JSONSchema7;
   if (!mutationSchema) {
     console.warn(`Unknown mutation ${mutationName} provided`)
     return {};
   }
 
-  const args = mutationSchema.properties.arguments as JSONSchema7;
+  const args = mutationSchema.properties!.arguments as JSONSchema7;
   if (args && args.properties && Object.keys(args.properties).length > 0) {
     return formPropertiesReducer(args, schema);
   } else {
@@ -160,7 +170,7 @@ export function buildFormSchema(schema: JSONSchema7, mutation: DocumentNode): JS
   }
 }
 
-function formPropertiesReducer(schema, referenceSchema): JSONSchema7 {
+function formPropertiesReducer (schema, referenceSchema): JSONSchema7 {
   return {
     type: 'object',
     properties: reduce<JSONSchema7, { [k: string]: any }>(

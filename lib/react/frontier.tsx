@@ -57,32 +57,43 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
   constructor(props) {
     super(props);
 
-    const schema = schemaFromDataProps(this.props);
-    this.form = getFormFromSchema(
-      schema,
-      this.onSubmit,
-      this.props.initialValues || {}
-    );
-    this.form.subscribe(
-      initialState => {
-        this.state = { formState: initialState };
-      },
-      allFormSubscriptionItems
-    )(); // unsubscribe immediatly
+    schemaFromDataProps(this.props).then(schema => {
+      if (schema) {
+        this.form = getFormFromSchema(
+          schema,
+          this.onSubmit,
+          this.props.initialValues || {}
+        );
+        if (this.mounted && !this.formSubscription) {
+          this.subscribeToForm();
+        } else {
+          this.form.subscribe(
+            initialState => {
+              this.state = { formState: initialState };
+            },
+            allFormSubscriptionItems
+          )();
+        }
+      }
+    });
   }
 
   componentDidMount () {
     if (this.form) {
-      this.formSubscription = this.form.subscribe(
-        formState => {
-          if (this.mounted) {
-            this.setState({ formState })
-          }
-          this.mounted = true;
-        },
-        allFormSubscriptionItems
-      )
+      this.subscribeToForm();
     }
+  }
+
+  subscribeToForm () {
+    this.formSubscription = this.form!.subscribe(
+      formState => {
+        if (this.mounted) {
+          this.setState({ formState })
+        }
+        this.mounted = true;
+      },
+      allFormSubscriptionItems
+    )
   }
 
   componentWillMount () {
@@ -93,11 +104,13 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
   }
 
   componentDidUpdate (prevProps) {
-    // initialValues changed
-    if (!isEqual(this.props.initialValues, prevProps.initialValues)) {
-      this.form.initialize(this.props.initialValues);
-    }
+    if (this.form) {
+      // initialValues changed
+      if (!isEqual(this.props.initialValues, prevProps.initialValues)) {
+        this.form.initialize(this.props.initialValues || {});
+      }
 
+    }
     // TODO: handle mutation or schema change?
   }
 
@@ -113,22 +126,22 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
 
     let modifiers: any = {};
 
-    const fields = this.form.getRegisteredFields();
+    const fields = this.form!.getRegisteredFields();
     each(fields, (fieldPath) => {
       each(['focus', 'blur', 'change'], action => {
         set(
           modifiers,
           `${fieldPath}.${action}`,
           (...args) => {
-            this.form[action](fieldPath, ...args);
+            this.form![action](fieldPath, ...args);
           }
         )
       });
     });
 
     return {
-      form: this.form,
-      state: this.state.formState,
+      form: this.form!,
+      state: this.state.formState!,
       modifiers,
       // kit: createRenderPropsKit(),
     };

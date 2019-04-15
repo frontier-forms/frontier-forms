@@ -17,7 +17,8 @@
     "allowSyntheticDefaultImports": true,
     "removeComments": true,
     "experimentalDecorators": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "strictNullChecks": true
   },
   "include": [
     "index.ts",

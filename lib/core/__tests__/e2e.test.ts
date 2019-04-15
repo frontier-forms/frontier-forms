@@ -47,7 +47,7 @@ describe('Frontier Core', () => {
       expect(form.getRegisteredFields()).toContain('todo.name');
       expect(form.getRegisteredFields()).toContain('todo.completed');
 
-      expect(form.getFieldState('todo.name').value).toEqual('Write tests for Frontier Core')
+      expect(form.getFieldState('todo.name')!.value).toEqual('Write tests for Frontier Core')
     })
   })
 

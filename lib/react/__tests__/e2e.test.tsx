@@ -19,7 +19,7 @@ xdescribe("<Frontier> usage with render props", () => {
   `;
 
   const wrapper = shallow(
-    <Frontier mutation={mutation} schema={schema} initialValues={{ todo: { name: 'Todo 1' } }}>
+    <Frontier mutation={mutation} schema={schema} client={null as any} initialValues={{ todo: { name: 'Todo 1' } }}>
       {
         ({ state, modifiers, form }) => {
           return (

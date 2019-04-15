@@ -53,7 +53,7 @@ function validateWithSchema (schema: JSONSchema7): (values: object) => object | 
   const validator = ajv.compile(schema);
   return function (values: object) {
     const valid = validator(values);
-    return valid ? {} : formatErrors(validator.errors);
+    return valid ? {} : formatErrors(validator.errors || []);
   }
 }
 

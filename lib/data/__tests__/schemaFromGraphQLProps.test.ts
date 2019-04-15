@@ -1,5 +1,6 @@
 import gql from 'graphql-tag';
 import { schemaFromGraphQLProps } from '../graphql';
+import ApolloClient from 'apollo-client';
 
 describe('schemaFromGraphQLProps', () => {
   beforeEach(() => {
@@ -11,15 +12,19 @@ describe('schemaFromGraphQLProps', () => {
   });
 
   describe('given a invalid GraphQL props', () => {
-    it('should return an `null`', () => {
+    it('should return an `null`', (done) => {
       const props: any = {};
 
-      expect(schemaFromGraphQLProps(props)).toEqual(null);
+      schemaFromGraphQLProps(props).then(schema => {
+        expect(schema).toEqual(null);
+
+        done();
+      });
     })
   });
 
   describe('given a `schema` and `mutation` GraphQL props', () => {
-    it('should return a valid From Schema', () => {
+    it('should return a valid From Schema', (done) => {
       const props = {
         mutation: gql`
           mutation createTodo($todo: TodoInputType!) {
@@ -28,31 +33,37 @@ describe('schemaFromGraphQLProps', () => {
             }
           }
       `,
-        schema: require('../../../fixtures/data/tests-jsonschema.json')
+        schema: require('../../../fixtures/data/tests-jsonschema.json'),
+        client: null as any
       };
 
-      expect(schemaFromGraphQLProps(props)).toEqual({
-        "type": "object",
-        "properties": {
-          "todo": {
-            "type": "object",
-            "properties": {
-              "completed": {
-                "type": "boolean"
+      schemaFromGraphQLProps(props).then(schema => {
+        expect(schema).toEqual({
+          "type": "object",
+          "properties": {
+            "todo": {
+              "type": "object",
+              "properties": {
+                "completed": {
+                  "type": "boolean"
+                },
+                "name": {
+                  "type": "string"
+                }
               },
-              "name": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "name"
-            ]
-          }
-        },
-        "required": [
-          "todo"
-        ]
-      })
+              "required": [
+                "name"
+              ]
+            }
+          },
+          "required": [
+            "todo"
+          ]
+        })
+
+        done();
+      });
+
     })
   });
 

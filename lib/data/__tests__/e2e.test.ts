@@ -3,7 +3,7 @@ import { schemaFromGraphQLProps } from '../graphql';
 
 describe('Frontier Data GraphQl', () => {
   describe('given a valid GraphQL mutation document', () => {
-    it('should return the proper Form Schema', () => {
+    it('should return the proper Form Schema', (done) => {
       const schema = require('../../../fixtures/data/tests-jsonschema.json');
 
       const mutation = gql`
@@ -14,32 +14,34 @@ describe('Frontier Data GraphQl', () => {
           }
       `;
 
-      expect(
-        schemaFromGraphQLProps({
-          mutation,
-          schema
-        })
-      ).toEqual({
-        "type": "object",
-        "properties": {
-          "todo": {
-            "type": "object",
-            "properties": {
-              "completed": {
-                "type": "boolean"
+      schemaFromGraphQLProps({
+        mutation,
+        schema,
+        client: null as any
+      }).then(schema => {
+        expect(schema).toEqual({
+          "type": "object",
+          "properties": {
+            "todo": {
+              "type": "object",
+              "properties": {
+                "completed": {
+                  "type": "boolean"
+                },
+                "name": {
+                  "type": "string"
+                }
               },
-              "name": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "name"
-            ]
-          }
-        },
-        "required": [
-          "todo"
-        ]
+              "required": [
+                "name"
+              ]
+            }
+          },
+          "required": [
+            "todo"
+          ]
+        })
+        done();
       })
     })
   });
@@ -49,7 +51,7 @@ describe('Frontier Data GraphQl', () => {
       jest.spyOn(global.console, 'warn')
     });
 
-    it('should return an empty Form Schema and warn the developer', () => {
+    it('should return an empty Form Schema and warn the developer', (done) => {
       const schema = require('../../../fixtures/data/tests-jsonschema.json');
 
       const mutation = gql`
@@ -60,13 +62,16 @@ describe('Frontier Data GraphQl', () => {
           }
       `;
 
-      expect(
-        schemaFromGraphQLProps({
-          mutation,
-          schema
-        })
-      ).toEqual({})
-      expect(global.console.warn).toHaveBeenCalledWith('please provide a mutation document, received a query document')
+      schemaFromGraphQLProps({
+        mutation,
+        schema,
+        client: null as any
+      }).then(schema => {
+        expect(schema).toEqual({})
+        expect(global.console.warn).toHaveBeenCalledWith('please provide a mutation document, received a query document')
+
+        done();
+      })
     })
   });
 
@@ -75,7 +80,7 @@ describe('Frontier Data GraphQl', () => {
       jest.spyOn(global.console, 'warn')
     });
 
-    it('should return an empty Form Schema and warn the developer', () => {
+    it('should return an empty Form Schema and warn the developer', (done) => {
       const schema = require('../../../fixtures/data/tests-jsonschema.json');
 
       const mutation = gql`
@@ -86,13 +91,17 @@ describe('Frontier Data GraphQl', () => {
           }
       `;
 
-      expect(
-        schemaFromGraphQLProps({
-          mutation,
-          schema
-        })
-      ).toEqual({})
-      expect(global.console.warn).toHaveBeenCalledWith('Unknown mutation update_or_create_todo provided')
+
+      schemaFromGraphQLProps({
+        mutation,
+        schema,
+        client: null as any
+      }).then(schema => {
+        expect(schema).toEqual({})
+        expect(global.console.warn).toHaveBeenCalledWith('Unknown mutation update_or_create_todo provided')
+
+        done();
+      })
     })
   });
 

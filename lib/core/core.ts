@@ -8,8 +8,6 @@ export const allFieldSubscriptionItems: FieldSubscription = fieldSubscriptionIte
   return result
 }, {})
 
-export type OnFieldUpdateCallback = (fieldName: string, state: FieldState) => void;
-
 // Given a definitions and a mutation, should subscribe to proper fields
 export function getFormFromSchema (
   schema: JSONSchema7,
@@ -29,20 +27,30 @@ export function getFormFromSchema (
 
 // FIXME: find a nice way to handle field unsubscribe!
 function registerFields (form: FormApi, schema: JSONSchema7, namespace?: string) {
-  each(schema.properties, (value, key) => {
+  visitSchema(schema, (path, _definition) => {
+    form.registerField(
+      path,
+      () => { },
+      allFieldSubscriptionItems
+    );
+  })
+}
+
+export function visitSchema (
+  schema: JSONSchema7,
+  visitProperty: (path: string, definition: JSONSchema7) => void,
+  namespace?: string
+) {
+  each(schema.properties, (value: JSONSchema7, key: string) => {
     const pathKey = namespace ? `${namespace}.${key}` : key;
     if (value.type === 'object') {
-      registerFields(
-        form,
+      visitSchema(
         value,
+        visitProperty,
         pathKey
       );
     } else {
-      form.registerField(
-        pathKey,
-        () => { },
-        allFieldSubscriptionItems
-      );
+      visitProperty(pathKey, value);
     }
   })
 }
@@ -58,21 +66,26 @@ function validateWithSchema (schema: JSONSchema7): (values: object) => object | 
 }
 
 // Take `ajv` error:
-// [
-//   {
-//       "keyword": "type",
-//       "dataPath": ".todo.completed",
-//       "schemaPath": "#/properties/todo/properties/completed/type",
-//       "params": {
-//           "type": "boolean"
-//       },
-//       "message": "should be boolean"
-//   }
-// ]
-// and transform is to a key-value object (value is field error)
+//  [
+//    {
+//        "keyword": "type",
+//        "dataPath": ".todo.completed",
+//        "schemaPath": "#/properties/todo/properties/completed/type",
+//        "params": {
+//            "type": "boolean"
+//        },
+//        "message": "should be boolean"
+//    }
+//  ]
+// and transform is to:
+//  {
+//    todo: {
+//      completed: "should be boolean"
+//    }
+//  }
 function formatErrors (ajvErrors: Ajv.ErrorObject[]): object {
   let errors = {};
-  each(ajvErrors, (value, _key) => {
+  each(ajvErrors, (value: Ajv.ErrorObject, _key: string) => {
     set(
       errors,
       // remove the leading "." for root path

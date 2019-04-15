@@ -7,8 +7,9 @@ import { fromIntrospectionQuery } from "graphql-2-json-schema";
 
 export interface FrontierDataGraphQLProps {
   mutation: DocumentNode;
-  client: ApolloClient<any>;
+  client?: ApolloClient<any>;
   schema?: JSONSchema7;
+  save?: (values: object) => Promise<undefined | object>;
 }
 
 export type SchemaFromGraphQLPropsReturn = JSONSchema7 | null;
@@ -39,23 +40,28 @@ export function schemaFromGraphQLProps (props: FrontierDataGraphQLProps): Promis
 
 // perform a mutation operation with given `mutation` and `values`
 export function saveData (
-  client: ApolloClient<any>,
-  mutation: DocumentNode,
+  props: FrontierDataGraphQLProps,
   values: object
 ): Promise<undefined | object> {
-  return client.mutate({
-    mutation,
-    variables: values
-  }).then(result => {
-    if (result.errors) {
-      // FIXME: find a way to handle GQL errors on mutation arguments
-      return {};
-    } else {
-      return undefined; // submit succeed
-    }
-  });
+  if (!props.client && props.mutation) {
+    console.error('Trying to save data with a mutation without providing an ApolloClient!')
+    return Promise.reject({});
+  } else if (!props.mutation && props.save) {
+    return props.save(values);
+  } else {
+    return props.client!.mutate({
+      mutation: props.mutation,
+      variables: values
+    }).then(result => {
+      if (result.errors) {
+        // FIXME: find a way to handle GQL errors on mutation arguments
+        return {};
+      } else {
+        return undefined; // submit succeed
+      }
+    });
+  }
 }
-
 
 // Example of `mutation` object:
 // {

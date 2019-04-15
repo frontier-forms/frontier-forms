@@ -27,7 +27,10 @@ export function schemaFromGraphQLProps (props: FrontierDataGraphQLProps): Promis
           console.log(`Unable to fetch GraphQL schema: ${result.errors}`);
           return null;
         } else {
-          return fromIntrospectionQuery(result.data) as JSONSchema7;
+          const schema = fromIntrospectionQuery(result.data) as JSONSchema7;
+          // FIXME: update "graphql-2-json-schema" to generate JSONSchema7
+          schema.$schema = 'http://json-schema.org/draft-07/schema#';
+          return buildFormSchema(schema, props.mutation);
         }
       })
     } else {

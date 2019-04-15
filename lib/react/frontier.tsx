@@ -1,10 +1,9 @@
 import { Component, Children, createElement, ReactChildren } from "react";
 import { FrontierDataProps, schemaFromDataProps } from "../data";
-import { JSONSchema7 } from "json-schema";
 import { FormApi, FieldState, FormSubscription, formSubscriptionItems, FormState, Unsubscribe } from "final-form";
 import { getFormFromSchema } from "../core/core";
 import { each, set, isEqual, includes } from "lodash";
-import { timingSafeEqual } from "crypto";
+import { saveData } from "../data/graphql";
 
 export const allFormSubscriptionItems: FormSubscription = formSubscriptionItems.reduce(
   (result, key) => {
@@ -111,21 +110,19 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
       }
 
     }
-    // TODO: handle mutation or schema change?
+    // TODO: what do we do if mutation or schema change?
   }
 
-  onSubmit = (values: object) => {
-    // call Frontier Data save handler 
-  }
-
-  onFieldUpdate = (fieldName: string, state: FieldState) => { }
+  onSubmit = (values: object) => saveData(
+    this.props.client,
+    this.props.mutation,
+    values
+  )
 
   renderProps (): FrontierRenderProps {
-    // `state`, `modifiers` and `kit`
-    const { formState } = this.state;
-
     let modifiers: any = {};
 
+    // for each field, create a `<field>.(change|blur|focus)` modifier function
     const fields = this.form!.getRegisteredFields();
     each(fields, (fieldPath) => {
       each(['focus', 'blur', 'change'], action => {

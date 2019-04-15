@@ -5,10 +5,6 @@ import { ApolloClient } from "apollo-client";
 import { introspectionQuery } from './introspectionQuery';
 import { fromIntrospectionQuery } from "graphql-2-json-schema";
 
-// Given a GQL client and a mutation, should return a JSON Schema including definitions and the mutation
-
-export type GraphQLClient = { query: () => any };
-
 export interface FrontierDataGraphQLProps {
   mutation: DocumentNode;
   client: ApolloClient<any>;
@@ -40,6 +36,26 @@ export function schemaFromGraphQLProps (props: FrontierDataGraphQLProps): Promis
     return Promise.resolve(null);
   }
 }
+
+// perform a mutation operation with given `mutation` and `values`
+export function saveData (
+  client: ApolloClient<any>,
+  mutation: DocumentNode,
+  values: object
+): Promise<undefined | object> {
+  return client.mutate({
+    mutation,
+    variables: values
+  }).then(result => {
+    if (result.errors) {
+      // FIXME: find a way to handle GQL errors on mutation arguments
+      return {};
+    } else {
+      return undefined; // submit succeed
+    }
+  });
+}
+
 
 // Example of `mutation` object:
 // {

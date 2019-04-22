@@ -1,9 +1,9 @@
 import * as React from 'react';
-import { Component, Children, createElement, ReactChildren, ComponentType } from "react";
+import { Component, ComponentType } from "react";
 import { FrontierDataProps, schemaFromDataProps } from "../data";
-import { FormApi, FieldState, FormSubscription, formSubscriptionItems, FormState, Unsubscribe } from "final-form";
+import { FormApi, FormSubscription, formSubscriptionItems, FormState, Unsubscribe } from "final-form";
 import { getFormFromSchema, visitSchema } from "../core/core";
-import { each, set, isEqual, includes } from "lodash";
+import { each, set, isEqual, memoize } from "lodash";
 import { saveData } from "../data/graphql";
 import { UIKITFieldProps, UIKitResolver } from "../ui-kit";
 import { JSONSchema7 } from "json-schema";
@@ -141,17 +141,14 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
     const { uiKit } = this.props;
 
     if (uiKit) {
-      console.log('kit render props!')
       visitSchema(
         this.schema!,
         (path, definition) => {
-          console.log(`${path}`, uiKit(path, definition.type as any))
           set(
             kit,
             path, () => {
               const state = this.form!.getFieldState(path);
-              // FIXME: remove `any`
-              const Component = uiKit(path, definition.type as any);
+              const Component = this.uiKitComponentFor(path, definition);
               return <Component {...state!} />
             });
         }
@@ -165,6 +162,12 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
       kit,
     };
   }
+
+  uiKitComponentFor = memoize(
+    (path: string, definition: JSONSchema7) => this.props.uiKit!(path, definition.type as any),
+    // custom cache key resolver
+    (path: string, definition: JSONSchema7) => `${path}-${definition.type}`
+  )
 
   render () {
     if (!this.state.formState) {

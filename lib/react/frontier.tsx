@@ -163,15 +163,40 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
     };
   }
 
-  uiKitComponentFor = memoize(
+  uiKitComponentFor: (path: string, definition: JSONSchema7) => ComponentType<UIKITFieldProps> = memoize(
     (path: string, definition: JSONSchema7) => this.props.uiKit!(path, definition.type as any),
     // custom cache key resolver
     (path: string, definition: JSONSchema7) => `${path}-${definition.type}`
   )
 
+  renderWithKit () {
+    const fields: JSX.Element[] = [];
+
+    visitSchema(
+      this.schema!,
+      (path, definition) => {
+        const state = this.form!.getFieldState(path);
+        const Component = this.uiKitComponentFor(path, definition);
+        fields.push(<Component {...state!} />);
+      }
+    );
+
+    return (
+      <form onSubmit={(e) => { e.preventDefault(); this.form!.submit(); }}>
+        <div>
+          {fields}
+        </div>
+        <br />
+        <p>
+          <input type="submit" value="Save" className="ui button" />
+        </p>
+      </form>
+    )
+  }
+
   render () {
     if (!this.state.formState) {
-      return null; // loading ...
+      return null; // TODO: do render with renderprops and pass a `loading` flag
     }
 
     const child = this.props.children;
@@ -185,8 +210,7 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
         return child(this.renderProps());
       }
     } else if (this.props.uiKit) {
-      // render with ui-kit
-      return null;
+      return this.renderWithKit();
     } else {
       console.error(
         `Warning: Must specify either a render function as children or give a \`uiKit=\` props`

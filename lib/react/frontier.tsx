@@ -58,6 +58,10 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
   constructor(props) {
     super(props);
 
+    this.buildForm();
+  }
+
+  buildForm () {
     schemaFromDataProps(this.props).then(schema => {
       if (schema) {
         this.schema = schema;
@@ -101,6 +105,7 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
   componentWillMount () {
     if (this.unsubformSubscription) {
       this.unsubformSubscription();
+      this.unsubformSubscription = undefined;
     }
     this.mounted = false;
   }
@@ -113,7 +118,14 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
       }
 
     }
-    // TODO: what do we do if mutation or schema change?
+    // if `mutation={}` changed, we rebuild the form
+    if (!isEqual(this.props.mutation, prevProps.mutation)) {
+      if (this.unsubformSubscription) {
+        this.unsubformSubscription();
+        this.unsubformSubscription = undefined;
+      }
+      this.buildForm();
+    }
   }
 
   onSubmit = (values: object) => saveData(this.props, values)

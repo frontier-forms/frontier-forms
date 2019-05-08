@@ -155,15 +155,16 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
     if (uiKit) {
       visitSchema(
         this.schema!,
-        (path, definition) => {
+        (path, definition, required) => {
           set(
             kit,
             path, () => {
               const state = this.form!.getFieldState(path);
-              const Component = this.uiKitComponentFor(path, definition);
+              const Component = this.uiKitComponentFor(path, definition, required);
               return <Component {...state!} />
             });
-        }
+        },
+        this.schema!.required || []
       );
     }
 
@@ -175,10 +176,10 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
     };
   }
 
-  uiKitComponentFor: (path: string, definition: JSONSchema7) => ComponentType<UIKITFieldProps> = memoize(
-    (path: string, definition: JSONSchema7) => this.props.uiKit!(path, definition.type as any),
+  uiKitComponentFor: (path: string, definition: JSONSchema7, required: boolean) => ComponentType<UIKITFieldProps> = memoize(
+    (path: string, definition: JSONSchema7, required: boolean) => this.props.uiKit!(path, definition.type as any, required),
     // custom cache key resolver
-    (path: string, definition: JSONSchema7) => `${path}-${definition.type}`
+    (path: string, definition: JSONSchema7, required: boolean) => `${path}-${definition.type}`
   )
 
   renderWithKit () {
@@ -186,11 +187,12 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
 
     visitSchema(
       this.schema!,
-      (path, definition) => {
+      (path, definition, required) => {
         const state = this.form!.getFieldState(path);
-        const Component = this.uiKitComponentFor(path, definition);
+        const Component = this.uiKitComponentFor(path, definition, required);
         fields.push(<Component {...state!} />);
-      }
+      },
+      this.schema!.required || []
     );
 
     return (

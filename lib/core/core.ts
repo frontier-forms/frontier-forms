@@ -33,12 +33,15 @@ function registerFields (form: FormApi, schema: JSONSchema7, namespace?: string)
       () => { },
       allFieldSubscriptionItems
     );
-  })
+  },
+    schema.required || []
+  )
 }
 
 export function visitSchema (
   schema: JSONSchema7,
-  visitProperty: (path: string, definition: JSONSchema7) => void,
+  visitProperty: (path: string, definition: JSONSchema7, required: boolean) => void,
+  requiredFields: string[],
   namespace?: string
 ) {
   each(schema.properties, (value: JSONSchema7, key: string) => {
@@ -47,10 +50,11 @@ export function visitSchema (
       visitSchema(
         value,
         visitProperty,
+        value.required || [],
         pathKey
       );
     } else {
-      visitProperty(pathKey, value);
+      visitProperty(pathKey, value, requiredFields.includes(key));
     }
   })
 }

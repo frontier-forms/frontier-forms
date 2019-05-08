@@ -57,7 +57,7 @@ export function visitSchema (
 
 // Return a configured `ajv` validator for the given `schema` Form Schema
 function validateWithSchema (schema: JSONSchema7): (values: object) => object | Promise<object> {
-  const ajv = new Ajv();
+  const ajv = new Ajv({ allErrors: true });
   const validator = ajv.compile(schema);
   return function (values: object) {
     const valid = validator(values);
@@ -80,18 +80,33 @@ function validateWithSchema (schema: JSONSchema7): (values: object) => object | 
 // and transform is to:
 //  {
 //    todo: {
-//      completed: "should be boolean"
+//      completed: "type"
 //    }
 //  }
 function formatErrors (ajvErrors: Ajv.ErrorObject[]): object {
   let errors = {};
   each(ajvErrors, (value: Ajv.ErrorObject, _key: string) => {
-    set(
-      errors,
-      // remove the leading "." for root path
-      value.dataPath.substr(1, value.dataPath.length),
-      value.message
-    );
+    // required errors have a specific format
+    if (value.keyword == 'required') {
+      const path = value.dataPath ?
+        [value.dataPath.substr(1, value.dataPath.length), (value.params as Ajv.RequiredParams).missingProperty].join('') :
+        (value.params as Ajv.RequiredParams).missingProperty;
+
+      set(
+        errors,
+        path,
+        value.keyword
+      );
+
+      // all others (type, pattern) are handled here
+    } else {
+      set(
+        errors,
+        // remove the leading "." for root path
+        value.dataPath.substr(1, value.dataPath.length),
+        value.keyword
+      );
+    }
   });
   return errors;
 }

@@ -54,7 +54,7 @@ export const UIKit = (): UIKitAPI => {
       return api;
     },
     path: (path, handler) => {
-      handlers.paths[path as string] = handler;
+      handlers.paths[path.toString()] = handler;
       return api;
     },
     form: (handler) => {
@@ -73,10 +73,10 @@ export const UIKit = (): UIKitAPI => {
     },
 
     __reducer: (path, type, required, children) => {
-
-      let pathHandler: UIKitPathHandler | undefined = find(handlers.paths, (_handler, handlerPath: string | RegExp) => {
-        if (typeof (handlerPath as any).test !== 'undefined') {
-          return !!(handlerPath as any).test(path);
+      let pathHandler: UIKitPathHandler | undefined = find(handlers.paths, (_handler, handlerPath: string) => {
+        if (handlerPath[0] == '/') {
+          const regex = new RegExp(handlerPath.substr(1, handlerPath.length).substr(0, handlerPath.length - 2));
+          return regex.test(path);
         } else {
           return handlerPath == path;
         }

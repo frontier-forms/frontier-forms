@@ -3,7 +3,7 @@ import { Component, ComponentType } from "react";
 import { FrontierDataProps, schemaFromDataProps } from "../data";
 import { FormApi, FormSubscription, formSubscriptionItems, FormState, Unsubscribe } from "final-form";
 import { getFormFromSchema, visitSchema } from "../core/core";
-import { each, set, isEqual, memoize } from "lodash";
+import { each, set, isEqual, memoize, values, clone } from "lodash";
 import { saveData } from "../data/graphql";
 import { UIKITFieldProps, UIKitResolver, UIKitAPI } from "../ui-kit";
 import { JSONSchema7 } from "json-schema";
@@ -38,6 +38,7 @@ export interface FrontierProps extends FrontierDataProps {
   initialValues?: {};
   onSave?: (values: object) => void;
   resetOnSave?: boolean;
+  order?: string[];
 
   children?: ({ modifiers, state, kit }: FrontierRenderProps) => JSX.Element;
 };
@@ -193,19 +194,33 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
   )
 
   renderWithKit () {
-    const fields: JSX.Element[] = [];
+    let fields: { [k: string]: JSX.Element } = {};
 
     visitSchema(
       this.schema!,
       (path, definition, required) => {
         const state = this.form!.getFieldState(path);
         const Component = this.uiKitComponentFor(path, definition, required);
-        fields.push(<Component {...state!} />);
+        fields[path] = <Component {...state!} />;
       },
       this.schema!.required || []
     );
 
-    return this.props.uiKit!.__wrapWithForm(this.form!, fields);
+    // Sorting fields if an `order` is provided
+    if (this.props.order) {
+      let sortedFields = {};
+      each(this.props.order, (orderedPath: string) => {
+        sortedFields[orderedPath] = fields[orderedPath];
+        delete fields[orderedPath];
+      });
+      each(fields, (comp, p) => {
+        sortedFields[p] = comp;
+      })
+
+      fields = sortedFields;
+    }
+
+    return this.props.uiKit!.__wrapWithForm(this.form!, values(fields));
   }
 
   render () {

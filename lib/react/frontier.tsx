@@ -37,6 +37,7 @@ export interface FrontierProps extends FrontierDataProps {
   uiKit?: UIKitAPI;
   initialValues?: {};
   onSave?: (values: object) => void;
+  resetOnSave?: boolean;
 
   children?: ({ modifiers, state, kit }: FrontierRenderProps) => JSX.Element;
 };
@@ -131,7 +132,13 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
     }
   }
 
-  onSubmit = (values: object) => saveData(this.props, values)
+  onSubmit = (values: object) => {
+    saveData(this.props, values).then(() => {
+      if (this.props.resetOnSave === true) {
+        this.form!.reset();
+      }
+    })
+  }
 
   renderProps (): FrontierRenderProps {
     let modifiers: RenderPropsModifiersFieldObject = {};

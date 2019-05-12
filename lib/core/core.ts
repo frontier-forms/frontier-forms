@@ -2,11 +2,18 @@ import * as Ajv from "ajv";
 import { JSONSchema7 } from "json-schema";
 import { FormApi, createForm, Config, FieldSubscription, fieldSubscriptionItems, FieldState } from "final-form";
 import { each, set } from "lodash";
+import ajv = require("ajv");
 
 export const allFieldSubscriptionItems: FieldSubscription = fieldSubscriptionItems.reduce((result, key) => {
   result[key] = true
   return result
 }, {})
+
+const formatsRegistry: { [k: string]: ajv.FormatValidator } = {};
+
+export const addFormat = (formatName: string, validator: ajv.FormatValidator) => {
+  formatsRegistry[formatName] = validator;
+}
 
 // Given a definitions and a mutation, should subscribe to proper fields
 export function getFormFromSchema (
@@ -63,6 +70,10 @@ export function visitSchema (
 function validateWithSchema (schema: JSONSchema7): (values: object) => object | Promise<object> {
   const ajv = new Ajv({ allErrors: true });
   const validator = ajv.compile(schema);
+  // apply custom validators
+  each(formatsRegistry, (validator, name) => {
+    ajv.addFormat(name, validator);
+  })
   return function (values: object) {
     const valid = validator(values);
     return valid ? {} : formatErrors(validator.errors || []);

@@ -7,6 +7,8 @@ import { each, set, isEqual, memoize, values, clone } from "lodash";
 import { saveData } from "../data/graphql";
 import { UIKITFieldProps, UIKitResolver, UIKitAPI } from "../ui-kit";
 import { JSONSchema7 } from "json-schema";
+import { Ajv } from 'ajv';
+import ajv = require('ajv');
 
 export const allFormSubscriptionItems: FormSubscription = formSubscriptionItems.reduce(
   (result, key) => {

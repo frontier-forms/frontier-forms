@@ -202,7 +202,7 @@ function formPropertiesReducer (schema, referenceSchema): JSONSchema7 {
       schema.properties,
       (result, value, key) => {
         if (get(value, '$ref')) {
-          const refTypeName = get(value, '$ref').replace('#/definitions/', '');
+          const refTypeName = get(value, '$ref')!.replace('#/definitions/', '');
           const refType = referenceSchema.definitions[refTypeName];
           if (!refType) {
             console.warn(`unknown $ref "${refTypeName}" for ${key}`);

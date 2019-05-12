@@ -1,8 +1,97 @@
 import { JSONSchema7TypeName } from "json-schema";
 import { ReactNode, ComponentType } from "react";
-import { FieldState } from "final-form";
+import { FieldState, FormState, formSubscriptionItems, FormApi } from "final-form";
+import { filter, find } from "lodash";
 
 export type UIKITFieldProps = FieldState & { children?: ReactNode };
 export interface UIKitResolver {
   (path: string, type: JSONSchema7TypeName, required: boolean, children?: ReactNode): ComponentType<UIKITFieldProps>;
+}
+
+export type UIKitPathHandler = (path: string, type: JSONSchema7TypeName, required: boolean, children?: ReactNode) => ComponentType<UIKITFieldProps>;
+export type UIKitTypeHandler = (path: string, required: boolean, children?: ReactNode) => ComponentType<UIKITFieldProps>
+export type UIKitUnknownHandler = (path: string, type: JSONSchema7TypeName) => ComponentType<UIKITFieldProps>;
+export type UIKitFormHandler = (form: FormApi, children?: ReactNode) => ReactNode;
+
+export interface UIKitAPI {
+  form: (f: UIKitFormHandler) => UIKitAPI;
+  unknown: (f: UIKitUnknownHandler) => UIKitAPI;
+  path: (path: string | RegExp, f: UIKitPathHandler) => UIKitAPI,
+  type: (type: JSONSchema7TypeName, f: UIKitTypeHandler) => UIKitAPI,
+  // internals
+  __reducer: (path: string, type: JSONSchema7TypeName, required: boolean, children?: ReactNode) => ComponentType<UIKITFieldProps>;
+  __wrapWithForm: UIKitFormHandler;
+}
+
+interface UIKitHandlers {
+  unknown: UIKitUnknownHandler;
+  types: { [k: string]: UIKitTypeHandler };
+  paths: { [k: string]: UIKitPathHandler };
+  form?: UIKitFormHandler;
+}
+
+export const UIKit = (): UIKitAPI => {
+  let handlers: UIKitHandlers = {
+    unknown: (path, type) => {
+      console.warn(`No component matching for field "${path}" with type ${type}`);
+      return () => null;
+    },
+    types: {},
+    paths: {}
+  }
+
+
+  const api: UIKitAPI = {
+    unknown: (handler) => {
+      if (handlers.unknown) {
+        console.warn('Frontier: overwritting a already define handler for `unknown`');
+      }
+      handlers.unknown = handler;
+      return api;
+    },
+    type: (type, handler) => {
+      handlers.types[type] = handler;
+      return api;
+    },
+    path: (path, handler) => {
+      handlers.paths[path as string] = handler;
+      return api;
+    },
+    form: (handler) => {
+      handlers.form = handler;
+      return api;
+    },
+    // internals (called by Frontier/core)
+
+    __wrapWithForm: (state, children) => {
+      if (!handlers.form) {
+        console.error('Frontier: no `form` handler defined in UIKit!')
+        return null;
+      } else {
+        return handlers.form(state, children);
+      }
+    },
+
+    __reducer: (path, type, required, children) => {
+
+      let pathHandler: UIKitPathHandler | undefined = find(handlers.paths, (_handler, handlerPath: string | RegExp) => {
+        if (typeof (handlerPath as any).test !== 'undefined') {
+          return !!(handlerPath as any).test(path);
+        } else {
+          return handlerPath == path;
+        }
+      })
+
+      if (pathHandler) {
+        return pathHandler(path, type, required, children)
+      }
+
+      if (handlers.types[type]) {
+        return (handlers.types[type] as UIKitTypeHandler)(path, required, children);
+      }
+
+      return handlers.unknown(path, type);
+    },
+  }
+  return api;
 }

@@ -340,6 +340,10 @@
   version "7.0.3"
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.3.tgz#bdfd69d61e464dcc81b25159c270d75a73c1a636"
 
+"@types/lodash@^4.14.125":
+  version "4.14.125"
+  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.125.tgz#b5fa71f3080a2136ba2702c390ffe528ec1e3980"
+
 "@types/node@*", "@types/node@^11.13.4":
   version "11.13.4"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-11.13.4.tgz#f83ec3c3e05b174b7241fadeb6688267fe5b22ca"

@@ -5,7 +5,7 @@ import { FormApi, FormSubscription, formSubscriptionItems, FormState, Unsubscrib
 import { getFormFromSchema, visitSchema } from "../core/core";
 import { each, set, isEqual, memoize } from "lodash";
 import { saveData } from "../data/graphql";
-import { UIKITFieldProps, UIKitResolver } from "../ui-kit";
+import { UIKITFieldProps, UIKitResolver, UIKitAPI } from "../ui-kit";
 import { JSONSchema7 } from "json-schema";
 
 export const allFormSubscriptionItems: FormSubscription = formSubscriptionItems.reduce(
@@ -34,7 +34,7 @@ export interface FrontierRenderProps {
 
 // Component props
 export interface FrontierProps extends FrontierDataProps {
-  uiKit?: UIKitResolver;
+  uiKit?: UIKitAPI;
   initialValues?: {};
   onSave?: (values: object) => void;
 
@@ -177,9 +177,9 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
   }
 
   uiKitComponentFor: (path: string, definition: JSONSchema7, required: boolean) => ComponentType<UIKITFieldProps> = memoize(
-    (path: string, definition: JSONSchema7, required: boolean) => this.props.uiKit!(path, definition.type as any, required),
+    (path: string, definition: JSONSchema7, required: boolean) => this.props.uiKit!.__reducer(path, definition.type as any, required),
     // custom cache key resolver
-    (path: string, definition: JSONSchema7, required: boolean) => `${path}-${definition.type}`
+    (path: string, definition: JSONSchema7, _required: boolean) => `${path}-${definition.type}`
   )
 
   renderWithKit () {
@@ -195,17 +195,7 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
       this.schema!.required || []
     );
 
-    return (
-      <form onSubmit={(e) => { e.preventDefault(); this.form!.submit(); }}>
-        <div>
-          {fields}
-        </div>
-        <br />
-        <p>
-          <input type="submit" value="Save" className="ui button" />
-        </p>
-      </form>
-    )
+    return this.props.uiKit!.__wrapWithForm(this.form!, fields);
   }
 
   render () {

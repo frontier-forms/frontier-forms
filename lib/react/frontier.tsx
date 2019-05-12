@@ -169,10 +169,10 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
         (path, definition, required) => {
           set(
             kit,
-            path, () => {
+            path, props => {
               const state = this.form!.getFieldState(path);
               const Component = this.uiKitComponentFor(path, definition, required);
-              return <Component {...state!} />
+              return <Component {...state!} {...props} />
             });
         },
         this.schema!.required || []

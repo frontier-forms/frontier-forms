@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { buildFormSchema } from '../graphql';
+import { buildFormSchema, getMutationNameFromDocumentNode } from '../graphql';
 
 describe('buildFormSchema', () => {
   beforeEach(() => {
@@ -21,7 +21,7 @@ describe('buildFormSchema', () => {
       `;
       const schema = require('../../../fixtures/data/tests-jsonschema.json');
 
-      expect(buildFormSchema(schema, mutation)).toEqual({})
+      expect(buildFormSchema(schema, getMutationNameFromDocumentNode(mutation)!)).toEqual({})
       expect(global.console.warn).toHaveBeenCalledWith('mutation update_online_status has no arguments')
     })
   });
@@ -37,7 +37,7 @@ describe('buildFormSchema', () => {
       `;
       const schema = require('../../../fixtures/data/tests-jsonschema.json');
 
-      expect(buildFormSchema(schema, mutation)).toEqual({})
+      expect(buildFormSchema(schema, getMutationNameFromDocumentNode(mutation)!)).toEqual({})
       expect(global.console.warn).toHaveBeenCalledWith('Unknown mutation create_online_status provided')
     })
   });
@@ -53,7 +53,7 @@ describe('buildFormSchema', () => {
       `;
       const schema = require('../../../fixtures/data/tests-invalid-ref-jsonschema.json');
 
-      expect(buildFormSchema(schema, mutation)).toEqual({
+      expect(buildFormSchema(schema, getMutationNameFromDocumentNode(mutation)!)).toEqual({
         "properties": {
           "id": {
             "type": "string",

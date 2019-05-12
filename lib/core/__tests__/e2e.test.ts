@@ -1,6 +1,6 @@
 import gql from "graphql-tag";
 import { getFormFromSchema } from "../core";
-import { buildFormSchema } from "../../data/graphql";
+import { buildFormSchema, getMutationNameFromDocumentNode } from "../../data/graphql";
 
 describe('Frontier Core', () => {
   describe('when providing a valid `schema` and `mutation`', () => {
@@ -14,7 +14,7 @@ describe('Frontier Core', () => {
           }
       `;
 
-      const formSchema = buildFormSchema(schema, mutation);
+      const formSchema = buildFormSchema(schema, getMutationNameFromDocumentNode(mutation)!);
       const form = getFormFromSchema(formSchema, jest.fn(), jest.fn());
 
       expect(form.getRegisteredFields()).toContain('todo.name');
@@ -33,7 +33,7 @@ describe('Frontier Core', () => {
           }
       `;
 
-      const formSchema = buildFormSchema(schema, mutation);
+      const formSchema = buildFormSchema(schema, getMutationNameFromDocumentNode(mutation)!);
       const form = getFormFromSchema(
         formSchema,
         jest.fn(),
@@ -62,7 +62,7 @@ describe('Frontier Core', () => {
           }
       `;
 
-      const formSchema = buildFormSchema(schema, mutation);
+      const formSchema = buildFormSchema(schema, getMutationNameFromDocumentNode(mutation)!);
       const form = getFormFromSchema(
         formSchema,
         jest.fn(),
@@ -82,7 +82,7 @@ describe('Frontier Core', () => {
       expect(form.getFieldState('todo.completed')).toEqual(
         expect.objectContaining({
           value: 'completed',
-          error: 'should be boolean',
+          error: 'type',
           dirty: true,
           pristine: false,
           name: 'todo.completed'

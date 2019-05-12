@@ -18,8 +18,8 @@ describe('Frontier Data GraphQl', () => {
         mutation,
         schema,
         client: null as any
-      }).then(schema => {
-        expect(schema).toEqual({
+      }).then(result => {
+        expect(result!.schema).toEqual({
           "type": "object",
           "properties": {
             "todo": {
@@ -66,8 +66,8 @@ describe('Frontier Data GraphQl', () => {
         mutation,
         schema,
         client: null as any
-      }).then(schema => {
-        expect(schema).toEqual({})
+      }).then(result => {
+        expect(result).toEqual(null)
         expect(global.console.warn).toHaveBeenCalledWith('please provide a mutation document, received a query document')
 
         done();
@@ -96,8 +96,8 @@ describe('Frontier Data GraphQl', () => {
         mutation,
         schema,
         client: null as any
-      }).then(schema => {
-        expect(schema).toEqual({})
+      }).then(result => {
+        expect(result).toEqual({ "mutationName": "update_or_create_todo", "schema": {} })
         expect(global.console.warn).toHaveBeenCalledWith('Unknown mutation update_or_create_todo provided')
 
         done();

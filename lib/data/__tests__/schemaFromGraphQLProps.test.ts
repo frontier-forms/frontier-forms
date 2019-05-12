@@ -37,8 +37,8 @@ describe('schemaFromGraphQLProps', () => {
         client: null as any
       };
 
-      schemaFromGraphQLProps(props).then(schema => {
-        expect(schema).toEqual({
+      schemaFromGraphQLProps(props).then(result => {
+        expect(result!.schema).toEqual({
           "type": "object",
           "properties": {
             "todo": {

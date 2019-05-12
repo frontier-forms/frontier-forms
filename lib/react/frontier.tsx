@@ -129,7 +129,8 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
         this.unsubformSubscription();
         this.unsubformSubscription = undefined;
       }
-      this.buildForm();
+      // avoid re-render with previous mutation
+      this.setState({ formState: undefined }, () => this.buildForm())
     }
   }
 
@@ -161,9 +162,7 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
       });
     });
 
-    const { uiKit } = this.props;
-
-    if (uiKit) {
+    if (this.props.uiKit) {
       visitSchema(
         this.schema!,
         (path, definition, required) => {

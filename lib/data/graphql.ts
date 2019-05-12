@@ -12,12 +12,17 @@ export interface FrontierDataGraphQLProps {
   save?: (values: object) => Promise<undefined | object>;
 }
 
-export type SchemaFromGraphQLPropsReturn = JSONSchema7 | null;
+export type SchemaFromGraphQLPropsReturn = { schema: JSONSchema7, mutationName: string } | null;
 // Given GraphQL data props, return a valid form JSONSchema (or null)
 export function schemaFromGraphQLProps (props: FrontierDataGraphQLProps): Promise<SchemaFromGraphQLPropsReturn> {
   if (props.mutation) {
+    const mutationName = getMutationNameFromDocumentNode(props.mutation);
+    if (!mutationName) {
+      return Promise.resolve(null);
+    }
+
     if (props.schema) {
-      return Promise.resolve(buildFormSchema(props.schema, props.mutation));
+      return Promise.resolve({ schema: buildFormSchema(props.schema, mutationName), mutationName });
     } else if (props.client) {
       return props.client.query({ query: introspectionQuery }).then(result => {
         if (result.errors) {
@@ -27,7 +32,7 @@ export function schemaFromGraphQLProps (props: FrontierDataGraphQLProps): Promis
           const schema = fromIntrospectionQuery(result.data) as JSONSchema7;
           // FIXME: update "graphql-2-json-schema" to generate JSONSchema7
           schema.$schema = 'http://json-schema.org/draft-07/schema#';
-          return buildFormSchema(schema, props.mutation);
+          return { schema: buildFormSchema(schema, mutationName), mutationName }
         }
       })
     } else {
@@ -174,12 +179,7 @@ export function getMutationNameFromDocumentNode (mutation: DocumentNode): string
 }
 
 // Given a GraphQL schema JSON Schema and a mutation, return a form schema
-export function buildFormSchema (schema: JSONSchema7, mutation: DocumentNode): JSONSchema7 {
-  const mutationName = getMutationNameFromDocumentNode(mutation);
-  if (!mutationName) {
-    return {};
-  }
-
+export function buildFormSchema (schema: JSONSchema7, mutationName: string): JSONSchema7 {
   const mutationSchema = (schema.properties!.Mutation as JSONSchema7).properties![mutationName] as JSONSchema7;
   if (!mutationSchema) {
     console.warn(`Unknown mutation ${mutationName} provided`)

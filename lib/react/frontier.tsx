@@ -51,6 +51,7 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
   state: FrontierState = {};
   form?: FormApi;
   schema?: JSONSchema7;
+  mutationName?: string;
   mounted: boolean = false;
   unsubformSubscription?: Unsubscribe;
 
@@ -62,11 +63,13 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
   }
 
   buildForm () {
-    schemaFromDataProps(this.props).then(schema => {
-      if (schema) {
-        this.schema = schema;
+    schemaFromDataProps(this.props).then(result => {
+      if (result) {
+        this.schema = result.schema;
+        this.mutationName = result.mutationName;
+
         this.form = getFormFromSchema(
-          schema,
+          result.schema,
           this.onSubmit,
           this.props.initialValues || {}
         );
@@ -177,9 +180,9 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
   }
 
   uiKitComponentFor: (path: string, definition: JSONSchema7, required: boolean) => ComponentType<UIKITFieldProps> = memoize(
-    (path: string, definition: JSONSchema7, required: boolean) => this.props.uiKit!.__reducer(path, definition.type as any, required),
+    (path: string, definition: JSONSchema7, required: boolean) => this.props.uiKit!.__reducer(`${this.mutationName!}.${path}`, definition.type as any, required),
     // custom cache key resolver
-    (path: string, definition: JSONSchema7, _required: boolean) => `${path}-${definition.type}`
+    (path: string, definition: JSONSchema7, _required: boolean) => `${this.mutationName!}.${path}-${definition.type}`
   )
 
   renderWithKit () {

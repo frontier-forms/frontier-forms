@@ -208,6 +208,27 @@ function formPropertiesReducer (schema, referenceSchema): JSONSchema7 {
             console.warn(`unknown $ref "${refTypeName}" for ${key}`);
           }
           result[key] = refType ? cloneDeep(formPropertiesReducer(refType, referenceSchema)) : {};
+        } else if (value.type === 'array') {
+          if (get(value.items, '$ref')) {
+            const refTypeName = get(value.items, '$ref')!.replace('#/definitions/', '');
+            const refType = referenceSchema.definitions[refTypeName];
+            if (!refType) {
+              console.warn(`unknown $ref "${refTypeName}" for ${key}`);
+            }
+            result[key] = refType ?
+              {
+                type: 'array',
+                items: cloneDeep(formPropertiesReducer(refType, referenceSchema))
+              } :
+              {}
+          } else {
+            result[key] = {
+              type: 'array',
+              items: has(value.items, 'properties') ?
+                { ...(value.items as any), properties: formPropertiesReducer(value.items, referenceSchema) }
+                : value.items
+            }
+          }
         } else {
           result[key] = has(value, 'properties') ?
             { ...value, properties: formPropertiesReducer(value, referenceSchema) }

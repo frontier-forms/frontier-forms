@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.1.0-4](https://github.com/frontier-forms/frontier-forms/compare/v0.1.0-3...v0.1.0-4) (2019-05-18)
+
+
+### Bug Fixes
+
+* **react:** TS fix ([7dded5a](https://github.com/frontier-forms/frontier-forms/commit/7dded5a))
+
+
+### Tests
+
+* fix all specs ([d8c5108](https://github.com/frontier-forms/frontier-forms/commit/d8c5108))
+
+
+
 ## [0.1.0-3](https://github.com/frontier-forms/frontier-forms/compare/v0.1.0-2...v0.1.0-3) (2019-05-12)
 
 

@@ -1,0 +1,153 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "properties": {
+    "Query": {
+      "type": "object",
+      "properties": {
+        "todo": {
+          "type": "object",
+          "properties": {
+            "return": {
+              "$ref": "#/definitions/Todo"
+            },
+            "arguments": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id"
+              ]
+            }
+          },
+          "required": []
+        },
+        "todos": {
+          "type": "object",
+          "properties": {
+            "return": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Todo"
+              }
+            },
+            "arguments": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          },
+          "required": []
+        }
+      },
+      "required": []
+    },
+    "Mutation": {
+      "type": "object",
+      "properties": {
+        "update_todo": {
+          "type": "object",
+          "properties": {
+            "return": {
+              "$ref": "#/definitions/Todo"
+            },
+            "arguments": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "todo": {
+                  "$ref": "#/definitions/TodoInputType"
+                }
+              },
+              "required": [
+                "id",
+                "todo"
+              ]
+            }
+          },
+          "required": []
+        },
+        "create_todo": {
+          "type": "object",
+          "properties": {
+            "return": {
+              "$ref": "#/definitions/Todo"
+            },
+            "arguments": {
+              "type": "object",
+              "properties": {
+                "todo": {
+                  "$ref": "#/definitions/TodoInputType"
+                }
+              },
+              "required": [
+                "todo"
+              ]
+            }
+          },
+          "required": []
+        },
+        "update_online_status": {
+          "type": "object",
+          "properties": {
+            "return": {
+              "$ref": "#/definitions/OnlineStatus"
+            },
+            "arguments": {}
+          },
+          "required": []
+        }
+      },
+      "required": []
+    }
+  },
+  "definitions": {
+    "Todo": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "completed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    },
+    "TodoInputType": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "completed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "OnlineStatus": {
+      "type": "object",
+      "properties": {
+        "onlineStatus": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "onlineStatus"
+      ]
+    }
+  }
+}

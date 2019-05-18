@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "properties": {
+    "Mutation": {
+      "type": "object",
+      "properties": {
+        "unknown_ref_mutation": {
+          "type": "object",
+          "properties": {
+            "return": {
+              "$ref": "#/definitions/User"
+            },
+            "arguments": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "user": {
+                  "$ref": "#/definitions/UnknowRef"
+                }
+              },
+              "required": [
+                "id",
+                "user"
+              ]
+            }
+          },
+          "required": []
+        }
+      }
+    }
+  },
+  "definitions": {
+    "User": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ]
+    }
+  }
+}

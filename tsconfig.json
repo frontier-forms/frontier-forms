@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "lib": [
+      "es6",
+      "es7",
+      "dom"
+    ],
+    "module": "commonjs",
+    "target": "es5",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "declaration": true,
+    "rootDir": ".",
+    "newLine": "LF",
+    "jsx": "react",
+    "outDir": "dist",
+    "allowSyntheticDefaultImports": true,
+    "removeComments": true,
+    "experimentalDecorators": true,
+    "skipLibCheck": true,
+    "strictNullChecks": true
+  },
+  "include": [
+    "index.ts",
+    "lib/**/*"
+  ]
+}

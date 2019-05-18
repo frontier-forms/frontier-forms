@@ -24,14 +24,14 @@ export interface Modifiers {
   blur: () => void;
 }
 
-export type RenderPropsModifiersFieldObject = { [k: string]: RenderPropsModifiersFieldObject | Modifiers; }
-export type RenderPropsUIKitFieldObject = { [k: string]: RenderPropsUIKitFieldObject | ComponentType<UIKITFieldProps>; }
+// export type RenderPropsModifiersFieldObject = { [k: string]: RenderPropsModifiersFieldObject | Modifiers; }
+// export type RenderPropsUIKitFieldObject = { [k: string]: RenderPropsUIKitFieldObject | ComponentType<UIKITFieldProps>; }
 // Component render props
 export interface FrontierRenderProps {
   form: FormApi;
   state: FormState,
-  modifiers: RenderPropsModifiersFieldObject,
-  kit?: RenderPropsUIKitFieldObject;
+  modifiers: any,
+  kit?: any;
 }
 
 // Component props
@@ -137,16 +137,18 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
   }
 
   onSubmit = (values: object) => {
-    saveData(this.props, values).then(() => {
+    const save = saveData(this.props, values)
+    save.then(() => {
       if (this.props.resetOnSave === true) {
         this.form!.reset();
       }
     })
+    return save;
   }
 
   renderProps (): FrontierRenderProps {
-    let modifiers: RenderPropsModifiersFieldObject = {};
-    let kit: RenderPropsUIKitFieldObject = {};
+    let modifiers: any = {};
+    let kit: any = {};
 
     // for each field, create a `<field>.(change|blur|focus)` modifier function
     const fields = this.form!.getRegisteredFields();

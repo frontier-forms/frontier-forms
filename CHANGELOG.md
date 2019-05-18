@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.1.0-5](https://github.com/frontier-forms/frontier-forms/compare/v0.1.0-4...v0.1.0-5) (2019-05-18)
+
+
+### Features
+
+* **react:** `modifiers.change` can either receive a value or a `SyntheticEvent` object ([3e05d16](https://github.com/frontier-forms/frontier-forms/commit/3e05d16))
+
+
+
 ## [0.1.0-4](https://github.com/frontier-forms/frontier-forms/compare/v0.1.0-3...v0.1.0-4) (2019-05-18)
 
 

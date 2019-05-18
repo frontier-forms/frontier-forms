@@ -170,9 +170,9 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
         `${fieldPath}.change`,
         (arg: string | React.SyntheticEvent) => {
           if (!!(arg as React.SyntheticEvent).preventDefault) {
-            this.form!.change((arg as any).currentTarget.value);
+            this.form!.change(fieldPath, (arg as any).currentTarget.value);
           } else {
-            this.form!.change(arg as string);
+            this.form!.change(fieldPath, arg as string);
           }
         }
       )

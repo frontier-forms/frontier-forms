@@ -50,7 +50,7 @@ export interface FrontierState {
   formState?: FormState;
 }
 
-const MODIFIERS_KEY: string[] = ['blur', 'focus', 'change'];
+const MODIFIERS_KEY: string[] = ['blur', 'focus'];
 export class Frontier extends Component<FrontierProps, FrontierState> {
   state: FrontierState = {};
   form?: FormApi;
@@ -164,6 +164,18 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
           }
         )
       });
+
+      set(
+        modifiers,
+        `${fieldPath}.change`,
+        (arg: string | React.SyntheticEvent) => {
+          if (!!(arg as React.SyntheticEvent).preventDefault) {
+            this.form!.change((arg as any).currentTarget.value);
+          } else {
+            this.form!.change(arg as string);
+          }
+        }
+      )
     });
 
     if (this.props.uiKit) {

@@ -91,5 +91,5 @@ npm i frontier-forms
 - [What is Frontier](https://frontier-forms.dev/what-is-frontier)
 - [Getting started](https://frontier-forms.dev/getting-started)
 - [Frontier UI-Kit](https://frontier-forms.dev/frontier-ui-kit)
-- [API: <Frontier>](https://frontier-forms.dev/api/frontier-component)
+- [API: `<Frontier>`](https://frontier-forms.dev/api/frontier-component)
 - [API: Frontier UI-Kit](https://frontier-forms.dev/api/frontier-ui-kit)

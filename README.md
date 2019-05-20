@@ -6,7 +6,7 @@ Provide a `GraphQL` mutation and `<Frontier/>` will do the rest for you.
 
 Both fast to use and performant ⚡!
 
-```
+```js
 import gql from "graphql-tag";
 import { Frontier } from "frontier-forms";
 import { myApplicationKit } from "./uiKit";

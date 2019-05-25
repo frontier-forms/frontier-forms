@@ -1,16 +1,16 @@
-import { JSONSchema7 } from 'json-schema';
+import { ApolloClient } from 'apollo-client';
 import { DocumentNode, FieldNode } from 'graphql';
-import { reduce, cloneDeep, has, get, map, set, merge } from 'lodash';
-import { ApolloClient } from "apollo-client";
+import { fromIntrospectionQuery } from 'graphql-2-json-schema';
+import { JSONSchema7 } from 'json-schema';
+import { cloneDeep, get, has, map, merge, reduce, set } from 'lodash';
 import { introspectionQuery } from './introspectionQuery';
-import { fromIntrospectionQuery } from "graphql-2-json-schema";
 
 export interface FrontierDataGraphQLProps {
   mutation: DocumentNode;
-  client?: ApolloClient<any>;
+  client?: ApolloClient<any>; // tslint:disable-line no-any
   schema?: JSONSchema7;
   save?: (values: object) => Promise<undefined | object>;
-  formats?: { [k: string]: string }
+  formats?: { [k: string]: string };
 }
 
 export type SchemaFromGraphQLPropsReturn = { schema: JSONSchema7, mutationName: string } | null;
@@ -30,6 +30,7 @@ export function schemaFromGraphQLProps (props: FrontierDataGraphQLProps): Promis
     } else if (props.client) {
       return props.client.query({ query: introspectionQuery }).then(result => {
         if (result.errors) {
+          // tslint:disable-next-line no-console
           console.log(`Unable to fetch GraphQL schema: ${result.errors}`);
           return null;
         } else {
@@ -39,9 +40,9 @@ export function schemaFromGraphQLProps (props: FrontierDataGraphQLProps): Promis
           return {
             schema: schemaWithFormats(buildFormSchema(schema, mutationName), props.formats || {}),
             mutationName
-          }
+          };
         }
-      })
+      });
     } else {
       return Promise.resolve(null);
     }
@@ -69,7 +70,8 @@ export function saveData (
   values: object
 ): Promise<undefined | object> {
   if (!props.client && props.mutation) {
-    console.error('Trying to save data with a mutation without providing an ApolloClient!')
+    // tslint:disable-next-line no-console
+    console.error('Trying to save data with a mutation without providing an ApolloClient!');
     return Promise.reject({});
   } else if (!props.mutation && props.save) {
     return props.save(values);
@@ -174,15 +176,15 @@ export function saveData (
 // }
 export function getMutationNameFromDocumentNode (mutation: DocumentNode): string | null {
   if (mutation.definitions.length > 1) {
-    console.warn("please provide 1 mutation document")
+    console.warn('please provide 1 mutation document');
     return null;
   } else {
     const definition = mutation.definitions[0];
     if (definition.kind === 'OperationDefinition' && definition.operation === 'mutation') {
-      if (definition.selectionSet.selections.length == 1 && definition.selectionSet.selections[0].kind === 'Field') {
+      if (definition.selectionSet.selections.length === 1 && definition.selectionSet.selections[0].kind === 'Field') {
         const selection = definition.selectionSet.selections[0] as FieldNode;
         if (!selection.name) {
-          console.warn("please provide a named mutation")
+          console.warn('please provide a named mutation');
           return null;
         } else {
           return selection.name.value;
@@ -192,7 +194,11 @@ export function getMutationNameFromDocumentNode (mutation: DocumentNode): string
         return null;
       }
     } else {
-      console.warn(`please provide a mutation document, received a ${definition.kind === 'OperationDefinition' ? definition.operation : definition.kind} document`)
+      console.warn(
+        'please provide a mutation document, received a ' +
+        (definition.kind === 'OperationDefinition' ? definition.operation : definition.kind) +
+        ' document'
+      );
       return null;
     }
   }
@@ -202,7 +208,7 @@ export function getMutationNameFromDocumentNode (mutation: DocumentNode): string
 export function buildFormSchema (schema: JSONSchema7, mutationName: string): JSONSchema7 {
   const mutationSchema = (schema.properties!.Mutation as JSONSchema7).properties![mutationName] as JSONSchema7;
   if (!mutationSchema) {
-    console.warn(`Unknown mutation ${mutationName} provided`)
+    console.warn(`Unknown mutation ${mutationName} provided`);
     return {};
   }
 
@@ -210,15 +216,16 @@ export function buildFormSchema (schema: JSONSchema7, mutationName: string): JSO
   if (args && args.properties && Object.keys(args.properties).length > 0) {
     return formPropertiesReducer(args, schema);
   } else {
-    console.warn(`mutation ${mutationName} has no arguments`)
+    console.warn(`mutation ${mutationName} has no arguments`);
     return {};
   }
 }
 
+// tslint:disable-next-line typedef
 function formPropertiesReducer (schema, referenceSchema): JSONSchema7 {
   return {
     type: 'object',
-    properties: reduce<JSONSchema7, { [k: string]: any }>(
+    properties: reduce<JSONSchema7, { [k: string]: any }>( // tslint:disable-line no-any
       schema.properties,
       (result, value, key) => {
         if (get(value, '$ref')) {
@@ -240,14 +247,15 @@ function formPropertiesReducer (schema, referenceSchema): JSONSchema7 {
                 type: 'array',
                 items: cloneDeep(formPropertiesReducer(refType, referenceSchema))
               } :
-              {}
+              {};
           } else {
             result[key] = {
               type: 'array',
               items: has(value.items, 'properties') ?
+                // tslint:disable-next-line no-any
                 { ...(value.items as any), properties: formPropertiesReducer(value.items, referenceSchema) }
                 : value.items
-            }
+            };
           }
         } else {
           result[key] = has(value, 'properties') ?
@@ -259,5 +267,5 @@ function formPropertiesReducer (schema, referenceSchema): JSONSchema7 {
       {}
     ),
     required: schema.required
-  }
+  };
 }

@@ -1,25 +1,29 @@
-import { JSONSchema7TypeName } from "json-schema";
-import { ReactNode, ComponentType } from "react";
-import { FieldState, FormState, formSubscriptionItems, FormApi } from "final-form";
-import { filter, find } from "lodash";
+import { FieldState, FormApi } from 'final-form';
+import { JSONSchema7TypeName } from 'json-schema';
+import { find } from 'lodash';
+import { ComponentType, ReactNode } from 'react';
 
 export type UIKITFieldProps = FieldState & { children?: ReactNode };
 export interface UIKitResolver {
   (path: string, type: JSONSchema7TypeName, required: boolean, children?: ReactNode): ComponentType<UIKITFieldProps>;
 }
 
-export type UIKitPathHandler = (path: string, type: JSONSchema7TypeName, required: boolean, children?: ReactNode) => ComponentType<UIKITFieldProps>;
-export type UIKitTypeHandler = (path: string, required: boolean, children?: ReactNode) => ComponentType<UIKITFieldProps>
+export type UIKitPathHandler =
+  (path: string, type: JSONSchema7TypeName, required: boolean, children?: ReactNode) => ComponentType<UIKITFieldProps>;
+export type UIKitTypeHandler =
+  (path: string, required: boolean, children?: ReactNode) => ComponentType<UIKITFieldProps>;
 export type UIKitUnknownHandler = (path: string, type: JSONSchema7TypeName) => ComponentType<UIKITFieldProps>;
 export type UIKitFormHandler = (form: FormApi, children?: ReactNode) => ReactNode;
 
 export interface UIKitAPI {
   form: (f: UIKitFormHandler) => UIKitAPI;
   unknown: (f: UIKitUnknownHandler) => UIKitAPI;
-  path: (path: string | RegExp, f: UIKitPathHandler) => UIKitAPI,
-  type: (type: JSONSchema7TypeName, f: UIKitTypeHandler) => UIKitAPI,
+  path: (path: string | RegExp, f: UIKitPathHandler) => UIKitAPI;
+  type: (type: JSONSchema7TypeName, f: UIKitTypeHandler) => UIKitAPI;
   // internals
-  __reducer: (path: string, type: JSONSchema7TypeName, required: boolean, children?: ReactNode) => ComponentType<UIKITFieldProps>;
+  __reducer: (
+    path: string, type: JSONSchema7TypeName, required: boolean, children?: ReactNode
+  ) => ComponentType<UIKITFieldProps>;
   __wrapWithForm: UIKitFormHandler;
 }
 
@@ -38,11 +42,10 @@ export const UIKit = (): UIKitAPI => {
     },
     types: {},
     paths: {}
-  }
-
+  };
 
   const api: UIKitAPI = {
-    unknown: (handler) => {
+    unknown: handler => {
       if (handlers.unknown) {
         console.warn('Frontier: overwritting a already define handler for `unknown`');
       }
@@ -57,7 +60,7 @@ export const UIKit = (): UIKitAPI => {
       handlers.paths[path.toString()] = handler;
       return api;
     },
-    form: (handler) => {
+    form: handler => {
       handlers.form = handler;
       return api;
     },
@@ -65,7 +68,8 @@ export const UIKit = (): UIKitAPI => {
 
     __wrapWithForm: (state, children) => {
       if (!handlers.form) {
-        console.error('Frontier: no `form` handler defined in UIKit!')
+        // tslint:disable-next-line no-console
+        console.error('Frontier: no `form` handler defined in UIKit!');
         return null;
       } else {
         return handlers.form(state, children);
@@ -74,16 +78,16 @@ export const UIKit = (): UIKitAPI => {
 
     __reducer: (path, type, required, children) => {
       let pathHandler: UIKitPathHandler | undefined = find(handlers.paths, (_handler, handlerPath: string) => {
-        if (handlerPath[0] == '/') {
+        if (handlerPath[0] === '/') {
           const regex = new RegExp(handlerPath.substr(1, handlerPath.length).substr(0, handlerPath.length - 2));
           return regex.test(path);
         } else {
-          return handlerPath == path;
+          return handlerPath === path;
         }
-      })
+      });
 
       if (pathHandler) {
-        return pathHandler(path, type, required, children)
+        return pathHandler(path, type, required, children);
       }
 
       if (handlers.types[type]) {
@@ -92,6 +96,6 @@ export const UIKit = (): UIKitAPI => {
 
       return handlers.unknown(path, type);
     },
-  }
+  };
   return api;
-}
+};

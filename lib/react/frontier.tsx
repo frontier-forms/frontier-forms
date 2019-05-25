@@ -1,37 +1,36 @@
-import * as React from 'react';
-import { Component, ComponentType } from "react";
-import { FrontierDataProps, schemaFromDataProps } from "../data";
-import { FormApi, FormSubscription, formSubscriptionItems, FormState, Unsubscribe } from "final-form";
-import { getFormFromSchema, visitSchema } from "../core/core";
-import { each, set, isEqual, memoize, values, clone } from "lodash";
-import { saveData } from "../data/graphql";
-import { UIKITFieldProps, UIKitResolver, UIKitAPI } from "../ui-kit";
-import { JSONSchema7 } from "json-schema";
-import { Ajv } from 'ajv';
-import ajv = require('ajv');
+import { FormApi, FormState, FormSubscription, formSubscriptionItems, Unsubscribe } from 'final-form';
+import { JSONSchema7 } from 'json-schema';
+import { each, isEqual, memoize, set, values } from 'lodash';
+import { Component, ComponentType } from 'react';
+import * as React from 'react'; // tslint:disable-line no-duplicate-imports
+import { getFormFromSchema, visitSchema } from '../core/core';
+import { FrontierDataProps, schemaFromDataProps } from '../data';
+import { saveData } from '../data/graphql';
+import { UIKitAPI, UIKITFieldProps } from '../ui-kit';
 
 export const allFormSubscriptionItems: FormSubscription = formSubscriptionItems.reduce(
   (result, key) => {
-    result[key] = true
-    return result
+    result[key] = true;
+    return result;
   },
   {}
-)
+);
 
 export interface Modifiers {
-  change: (value: any) => void;
+  change: (value: any) => void; // tslint:disable-line no-any
   focus: () => void;
   blur: () => void;
 }
 
 // export type RenderPropsModifiersFieldObject = { [k: string]: RenderPropsModifiersFieldObject | Modifiers; }
+// tslint:disable-next-line max-line-length
 // export type RenderPropsUIKitFieldObject = { [k: string]: RenderPropsUIKitFieldObject | ComponentType<UIKITFieldProps>; }
 // Component render props
 export interface FrontierRenderProps {
   form: FormApi;
-  state: FormState,
-  modifiers: any,
-  kit?: any;
+  state: FormState;
+  modifiers: any; // tslint:disable-line no-any
+  kit?: any; // tslint:disable-line no-any
 }
 
 // Component props
@@ -43,7 +42,7 @@ export interface FrontierProps extends FrontierDataProps {
   order?: string[];
 
   children?: ({ modifiers, state, kit }: FrontierRenderProps) => JSX.Element;
-};
+}
 
 // Component state
 export interface FrontierState {
@@ -51,6 +50,7 @@ export interface FrontierState {
 }
 
 const MODIFIERS_KEY: string[] = ['blur', 'focus'];
+type componentGetter = (path: string, definition: JSONSchema7, required: boolean) => ComponentType<UIKITFieldProps>;
 export class Frontier extends Component<FrontierProps, FrontierState> {
   state: FrontierState = {};
   form?: FormApi;
@@ -60,7 +60,7 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
   unsubformSubscription?: Unsubscribe;
 
   // Greatly inspired from the awesome https://github.com/final-form/react-final-form library
-  constructor(props) {
+  constructor(props: FrontierProps) {
     super(props);
 
     this.buildForm();
@@ -102,11 +102,11 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
     this.unsubformSubscription = this.form!.subscribe(
       formState => {
         if (this.mounted) {
-          this.setState({ formState })
+          this.setState({ formState });
         }
       },
       allFormSubscriptionItems
-    )
+    );
   }
 
   componentWillMount () {
@@ -117,7 +117,7 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
     this.mounted = false;
   }
 
-  componentDidUpdate (prevProps) {
+  componentDidUpdate(prevProps: FrontierProps) {
     if (this.form) {
       // initialValues changed
       if (!isEqual(this.props.initialValues, prevProps.initialValues)) {
@@ -132,28 +132,28 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
         this.unsubformSubscription = undefined;
       }
       // avoid re-render with previous mutation
-      this.setState({ formState: undefined }, () => this.buildForm())
+      this.setState({ formState: undefined }, () => this.buildForm());
     }
   }
 
-  onSubmit = (values: object) => {
-    const save = saveData(this.props, values)
+  onSubmit = (formValues: object) => {
+    const save = saveData(this.props, formValues);
     save.then(() => {
       if (this.props.resetOnSave === true) {
         this.form!.reset();
       }
-    })
+    });
     return save;
   }
 
   renderProps (): FrontierRenderProps {
-    let modifiers: any = {};
-    let kit: any = {};
+    let modifiers: any = {}; // tslint:disable-line no-any
+    let kit: any = {}; // tslint:disable-line no-any
 
     // for each field, create a `<field>.(change|blur|focus)` modifier function
     const fields = this.form!.getRegisteredFields();
 
-    each(fields, (fieldPath) => {
+    each(fields, fieldPath => {
       // set modifiers
       each(MODIFIERS_KEY, action => {
         set(
@@ -162,7 +162,7 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
           (...args) => {
             this.form![action](fieldPath, ...args);
           }
-        )
+        );
       });
 
       set(
@@ -170,12 +170,12 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
         `${fieldPath}.change`,
         (arg: string | React.SyntheticEvent) => {
           if (!!(arg as React.SyntheticEvent).preventDefault) {
-            this.form!.change(fieldPath, (arg as any).currentTarget.value);
+            this.form!.change(fieldPath, (arg as any).currentTarget.value); // tslint:disable-line no-any
           } else {
             this.form!.change(fieldPath, arg as string);
           }
         }
-      )
+      );
     });
 
     if (this.props.uiKit) {
@@ -186,8 +186,8 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
             kit,
             path, props => {
               const state = this.form!.getFieldState(path);
-              const Component = this.uiKitComponentFor(path, definition, required);
-              return <Component {...state!} {...props} />
+              const FieldComponent = this.uiKitComponentFor(path, definition, required);
+              return <FieldComponent {...state!} {...props} />;
             });
         },
         this.schema!.required || []
@@ -201,12 +201,13 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
       kit,
     };
   }
-
-  uiKitComponentFor: (path: string, definition: JSONSchema7, required: boolean) => ComponentType<UIKITFieldProps> = memoize(
-    (path: string, definition: JSONSchema7, required: boolean) => this.props.uiKit!.__reducer(`${this.mutationName!}.${path}`, definition.type as any, required),
+  uiKitComponentFor: componentGetter = memoize(
+    (path: string, definition: JSONSchema7, required: boolean) =>
+    // tslint:disable-next-line no-any
+      this.props.uiKit!.__reducer(`${this.mutationName!}.${path}`, definition.type as any, required),
     // custom cache key resolver
     (path: string, definition: JSONSchema7, _required: boolean) => `${this.mutationName!}.${path}-${definition.type}`
-  )
+  );
 
   renderWithKit () {
     let fields: { [k: string]: JSX.Element } = {};
@@ -215,8 +216,8 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
       this.schema!,
       (path, definition, required) => {
         const state = this.form!.getFieldState(path);
-        const Component = this.uiKitComponentFor(path, definition, required);
-        fields[path] = <Component {...state!} />;
+        const FieldComponent = this.uiKitComponentFor(path, definition, required);
+        fields[path] = <FieldComponent {...state!} />;
       },
       this.schema!.required || []
     );
@@ -230,7 +231,7 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
       });
       each(fields, (comp, p) => {
         sortedFields[p] = comp;
-      })
+      });
 
       fields = sortedFields;
     }
@@ -246,9 +247,10 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
     const child = this.props.children;
     if (child) {
       if (typeof child !== 'function') {
+        // tslint:disable-next-line no-console
         console.error(
           `Warning: Must specify a render function as children, received "${typeof child}"`
-        )
+        );
         return null;
       } else {
         return child(this.renderProps());
@@ -256,9 +258,10 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
     } else if (this.props.uiKit) {
       return this.renderWithKit();
     } else {
+      // tslint:disable-next-line no-console
       console.error(
         `Warning: Must specify either a render function as children or give a \`uiKit=\` props`
-      )
+      );
       return null;
     }
   }

@@ -14,6 +14,7 @@ describe('<Frontier> usage with render props', () => {
       }
   `;
 
+  // tslint:disable-next-line
   const wrapper = shallow(
     // tslint:disable-next-line no-any
     <Frontier mutation={mutation} schema={schema} client={null as any} initialValues={{ todo: { name: 'Todo 1' } }}>

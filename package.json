@@ -11,6 +11,8 @@
   "scripts": {
     "test": "jest",
     "build": "tsc",
+    "tslint": "tslint --project tsconfig.json --config tslint.json",
+    "tslint:fix": "tslint --project tsconfig.json --fix --config tslint.json",
     "release": "tsc; standard-version"
   },
   "dependencies": {
@@ -39,6 +41,7 @@
     "react-dom": "^16.8.6",
     "standard-version": "^5.0.2",
     "ts-jest": "^24.0.2",
+    "tslint": "^5.16.0",
     "typescript": "^3.4.3"
   }
 }

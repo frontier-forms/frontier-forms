@@ -3,7 +3,7 @@ import { getMutationNameFromDocumentNode } from '../graphql';
 
 describe('getMutationNameFromDocumentNode', () => {
   beforeEach(() => {
-    jest.spyOn(global.console, 'warn')
+    jest.spyOn(global.console, 'warn');
   });
 
   afterEach(() => {
@@ -21,9 +21,9 @@ describe('getMutationNameFromDocumentNode', () => {
           }
       `;
 
-      expect(getMutationNameFromDocumentNode(mutation)).toEqual(null)
-      expect(global.console.warn).toHaveBeenCalledWith('please provide a mutation document, received a query document')
-    })
+      expect(getMutationNameFromDocumentNode(mutation)).toEqual(null);
+      expect(global.console.warn).toHaveBeenCalledWith('please provide a mutation document, received a query document');
+    });
   });
 
   describe('given a GraphQL document with an operation that define many mutations', () => {
@@ -34,7 +34,7 @@ describe('getMutationNameFromDocumentNode', () => {
               ...Todo
             }
           }
-  
+
           mutation createTodo($todo: TodoInputType!) {
             create_todo(todo: $todo) {
               ...Todo
@@ -42,9 +42,9 @@ describe('getMutationNameFromDocumentNode', () => {
           }
       `;
 
-      expect(getMutationNameFromDocumentNode(mutation)).toEqual(null)
-      expect(global.console.warn).toHaveBeenCalledWith('please provide 1 mutation document')
-    })
+      expect(getMutationNameFromDocumentNode(mutation)).toEqual(null);
+      expect(global.console.warn).toHaveBeenCalledWith('please provide 1 mutation document');
+    });
   });
 
   describe('given a valid GraphQL document with a mutation', () => {
@@ -57,9 +57,9 @@ describe('getMutationNameFromDocumentNode', () => {
         }
       `;
 
-      expect(getMutationNameFromDocumentNode(mutation)).toEqual('create_todo')
+      expect(getMutationNameFromDocumentNode(mutation)).toEqual('create_todo');
       expect(global.console.warn).not.toHaveBeenCalled();
-    })
+    });
   });
 
 });

@@ -1,25 +1,25 @@
-import * as Ajv from "ajv";
-import { JSONSchema7 } from "json-schema";
-import { FormApi, createForm, Config, FieldSubscription, fieldSubscriptionItems, FieldState } from "final-form";
-import { each, set } from "lodash";
-import ajv = require("ajv");
+import * as Ajv from 'ajv';
+import ajv = require('ajv');
+import { Config, createForm, FieldSubscription, fieldSubscriptionItems, FormApi } from 'final-form';
+import { JSONSchema7 } from 'json-schema';
+import { each, noop, set } from 'lodash';
 
 export const allFieldSubscriptionItems: FieldSubscription = fieldSubscriptionItems.reduce((result, key) => {
-  result[key] = true
-  return result
-}, {})
+  result[key] = true;
+  return result;
+},                                                                                        {});
 
 const formatsRegistry: { [k: string]: ajv.FormatValidator } = {};
 
 export const addFormat = (formatName: string, validator: ajv.FormatValidator) => {
   formatsRegistry[formatName] = validator;
-}
+};
 
 // Given a definitions and a mutation, should subscribe to proper fields
 export function getFormFromSchema (
   schema: JSONSchema7,
   onSubmit: Config['onSubmit'],
-  initialValues = {}
+  initialValues = {} // tslint:disable-line typedef
 ): FormApi {
   const form = createForm({
     validate: validateWithSchema(schema),
@@ -37,12 +37,12 @@ function registerFields (form: FormApi, schema: JSONSchema7, namespace?: string)
   visitSchema(schema, (path, _definition) => {
     form.registerField(
       path,
-      () => { },
+      noop,
       allFieldSubscriptionItems
     );
   },
-    schema.required || []
-  )
+              schema.required || []
+  );
 }
 
 export function visitSchema (
@@ -63,21 +63,21 @@ export function visitSchema (
     } else {
       visitProperty(pathKey, value, requiredFields.includes(key));
     }
-  })
+  });
 }
 
 // Return a configured `ajv` validator for the given `schema` Form Schema
 function validateWithSchema (schema: JSONSchema7): (values: object) => object | Promise<object> {
-  const ajv = new Ajv({ allErrors: true });
-  const validator = ajv.compile(schema);
+  const ajvCompiler = new Ajv({ allErrors: true });
+  const validateFunction = ajvCompiler.compile(schema);
   // apply custom validators
   each(formatsRegistry, (validator, name) => {
-    ajv.addFormat(name, validator);
-  })
+    ajvCompiler.addFormat(name, validator);
+  });
   return function (values: object) {
-    const valid = validator(values);
-    return valid ? {} : formatErrors(validator.errors || []);
-  }
+    const valid = validateFunction(values);
+    return valid ? {} : formatErrors(validateFunction.errors || []);
+  };
 }
 
 // Take `ajv` error:
@@ -102,9 +102,12 @@ function formatErrors (ajvErrors: Ajv.ErrorObject[]): object {
   let errors = {};
   each(ajvErrors, (value: Ajv.ErrorObject, _key: string) => {
     // required errors have a specific format
-    if (value.keyword == 'required') {
+    if (value.keyword === 'required') {
       const path = value.dataPath ?
-        [value.dataPath.substr(1, value.dataPath.length), (value.params as Ajv.RequiredParams).missingProperty].join('') :
+        [
+          value.dataPath.substr(1, value.dataPath.length),
+          (value.params as Ajv.RequiredParams).missingProperty
+        ].join('') :
         (value.params as Ajv.RequiredParams).missingProperty;
 
       set(

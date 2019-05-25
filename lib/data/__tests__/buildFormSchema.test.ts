@@ -3,7 +3,7 @@ import { buildFormSchema, getMutationNameFromDocumentNode } from '../graphql';
 
 describe('buildFormSchema', () => {
   beforeEach(() => {
-    jest.spyOn(global.console, 'warn')
+    jest.spyOn(global.console, 'warn');
   });
 
   afterEach(() => {
@@ -21,9 +21,9 @@ describe('buildFormSchema', () => {
       `;
       const schema = require('../../../fixtures/data/tests-jsonschema.json');
 
-      expect(buildFormSchema(schema, getMutationNameFromDocumentNode(mutation)!)).toEqual({})
-      expect(global.console.warn).toHaveBeenCalledWith('mutation update_online_status has no arguments')
-    })
+      expect(buildFormSchema(schema, getMutationNameFromDocumentNode(mutation)!)).toEqual({});
+      expect(global.console.warn).toHaveBeenCalledWith('mutation update_online_status has no arguments');
+    });
   });
 
   describe('given a `schema` and `mutation`, with a mutation that is not defined in `schema`', () => {
@@ -37,9 +37,9 @@ describe('buildFormSchema', () => {
       `;
       const schema = require('../../../fixtures/data/tests-jsonschema.json');
 
-      expect(buildFormSchema(schema, getMutationNameFromDocumentNode(mutation)!)).toEqual({})
-      expect(global.console.warn).toHaveBeenCalledWith('Unknown mutation create_online_status provided')
-    })
+      expect(buildFormSchema(schema, getMutationNameFromDocumentNode(mutation)!)).toEqual({});
+      expect(global.console.warn).toHaveBeenCalledWith('Unknown mutation create_online_status provided');
+    });
   });
 
   describe('given a `schema` and `mutation`, with a schema that have an unknown $ref property value', () => {
@@ -54,20 +54,20 @@ describe('buildFormSchema', () => {
       const schema = require('../../../fixtures/data/tests-invalid-ref-jsonschema.json');
 
       expect(buildFormSchema(schema, getMutationNameFromDocumentNode(mutation)!)).toEqual({
-        "properties": {
-          "id": {
-            "type": "string",
+        'properties': {
+          'id': {
+            'type': 'string',
           },
-          "user": {},
+          'user': {},
         },
-        "required": [
-          "id",
-          "user",
+        'required': [
+          'id',
+          'user',
         ],
-        "type": "object",
+        'type': 'object',
       });
-      expect(global.console.warn).toHaveBeenCalledWith('unknown $ref "UnknowRef" for user')
-    })
+      expect(global.console.warn).toHaveBeenCalledWith('unknown $ref "UnknowRef" for user');
+    });
   });
 
 });

@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.1.0](https://github.com/frontier-forms/frontier-forms/compare/v0.1.0-6...v0.1.0) (2019-05-25)
+
+
+### Bug Fixes
+
+* **react:** ignore tests ([8507292](https://github.com/frontier-forms/frontier-forms/commit/8507292))
+* **react:** typo in tests ([ef417b4](https://github.com/frontier-forms/frontier-forms/commit/ef417b4))
+* **readme:** add syntax highlighting for code example ([a294b08](https://github.com/frontier-forms/frontier-forms/commit/a294b08))
+
+
+
 ## [0.1.0-6](https://github.com/frontier-forms/frontier-forms/compare/v0.1.0-5...v0.1.0-6) (2019-05-18)
 
 

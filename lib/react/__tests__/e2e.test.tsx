@@ -8,7 +8,7 @@ describe('ignore this test suite', () => {
   it('succeed', () => expect(1 + 1).toEqual(2));
 });
 
-xdescribe('<Frontier> usage with render props', () => {
+describe('<Frontier> usage with render props', () => {
   const schema = require('../../../fixtures/data/tests-jsonschema.json');
   const mutation = gql`
       mutation createTodo($todo: TodoInputType!) {

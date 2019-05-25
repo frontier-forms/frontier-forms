@@ -9,11 +9,6 @@ jobs:
       # specify the version you desire here
       - image: circleci/node:10.4.1
 
-      # Specify service dependencies here if necessary
-      # CircleCI maintains a library of pre-built images
-      # documented at https://circleci.com/docs/2.0/circleci-images/
-      # - image: circleci/mongo:3.4.4
-
     working_directory: ~/repo
 
     steps:
@@ -21,17 +16,26 @@ jobs:
 
       # Download and cache dependencies
       - restore_cache:
+          name: Restore Yarn Package Cache
           keys:
-            - v1-dependencies-{{ checksum "package.json" }}
+            - yarn-packages-{{ checksum "yarn.lock" }}
             # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
+            - yarn-packages-
 
-      - run: yarn install
+      - run:
+          name: Install Dependencies
+          command: yarn install --frozen-lockfile
 
       - save_cache:
           paths:
-            - node_modules
-          key: v1-dependencies-{{ checksum "package.json" }}
+            - ~/.cache/yarn
+          key: v1-dependencies-{{ checksum "yarn.lock" }}
 
+      # Let's lint first
+      - run:
+          name: Linting
+          command: yarn tslint
       # run tests!
-      - run: yarn test
+      - run:
+          name: Testing
+          command: yarn test

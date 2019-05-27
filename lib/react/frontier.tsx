@@ -147,7 +147,7 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
   }
 
   renderProps (): FrontierRenderProps {
-    let modifiers: any = {}; // tslint:disable-line no-any
+    let modifiers: any = {save: this.form!.submit}; // tslint:disable-line no-any
     let kit: any = {}; // tslint:disable-line no-any
 
     // for each field, create a `<field>.(change|blur|focus)` modifier function

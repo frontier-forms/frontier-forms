@@ -9,7 +9,7 @@ export interface FrontierDataGraphQLProps {
   mutation: DocumentNode;
   client?: ApolloClient<any>; // tslint:disable-line no-any
   schema?: JSONSchema7;
-  save?: (values: object) => Promise<undefined | object>;
+  save?: (values: object) => Promise<object>;
   formats?: { [k: string]: string };
 }
 
@@ -68,7 +68,7 @@ function schemaWithFormats (schema: JSONSchema7, formats: { [k: string]: string 
 export function saveData (
   props: FrontierDataGraphQLProps,
   values: object
-): Promise<undefined | object> {
+): Promise<object> {
   if (!props.client && props.mutation) {
     // tslint:disable-next-line no-console
     console.error('Trying to save data with a mutation without providing an ApolloClient!');
@@ -84,7 +84,7 @@ export function saveData (
         // FIXME: find a way to handle GQL errors on mutation arguments
         return {};
       } else {
-        return undefined; // submit succeed
+        return result; // submit succeed
       }
     });
   }

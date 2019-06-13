@@ -6,7 +6,7 @@ import { cloneDeep, get, has, map, merge, reduce, set } from 'lodash';
 import { introspectionQuery } from './introspectionQuery';
 
 export interface FrontierDataGraphQLProps {
-  mutation: DocumentNode;
+  mutation?: DocumentNode;
   client?: ApolloClient<any>; // tslint:disable-line no-any
   schema?: JSONSchema7;
   save?: (values: object) => Promise<undefined | object>;
@@ -73,11 +73,15 @@ export function saveData (
     // tslint:disable-next-line no-console
     console.error('Trying to save data with a mutation without providing an ApolloClient!');
     return Promise.reject({});
-  } else if (!props.mutation && props.save) {
+  } else if (!props.mutation && !props.save) {
+    // tslint:disable-next-line no-console
+    console.error('Either save or mutation has to be provided!');
+    return Promise.reject({});
+  } else if (props.save) {
     return props.save(values);
   } else {
     return props.client!.mutate({
-      mutation: props.mutation,
+      mutation: props.mutation!,
       variables: values
     }).then(result => {
       if (result.errors) {

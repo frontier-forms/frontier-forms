@@ -6,6 +6,8 @@ Provide a `GraphQL` mutation and `<Frontier/>` will do the rest for you.
 
 Both fast to use and performant ⚡!
 
+➡️ [See all capabilites by watching the introduction talk from React Europe 2019!](https://www.youtube.com/watch?v=Ovg9CYwWFBM&list=PLCC436JpVnK3H8Gm28TuFn2wjL9sj_q_Y&index=5&t=0s)
+
 ```js
 import gql from "graphql-tag";
 import { Frontier } from "frontier-forms";

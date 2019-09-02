@@ -6,7 +6,7 @@ import { cloneDeep, get, has, map, merge, reduce, set } from 'lodash';
 import { introspectionQuery } from './introspectionQuery';
 
 export interface FrontierDataGraphQLProps {
-  mutation: DocumentNode;
+  mutation?: DocumentNode;
   client?: ApolloClient<any>; // tslint:disable-line no-any
   schema?: JSONSchema7;
   save?: (values: object) => Promise<undefined | object>;

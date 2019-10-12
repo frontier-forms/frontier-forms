@@ -217,7 +217,7 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
       (path, definition, required) => {
         const state = this.form!.getFieldState(path);
         const FieldComponent = this.uiKitComponentFor(path, definition, required);
-        fields[path] = <FieldComponent {...state!} />;
+        fields[path] = <FieldComponent {...state!} key={path} />;
       },
       this.schema!.required || []
     );

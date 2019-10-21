@@ -1,6 +1,6 @@
 {
   "name": "frontier-forms",
-  "version": "0.1.2-0",
+  "version": "0.1.2-1",
   "description": "The smartest web-forms.",
   "main": "dist/index.js",
   "repository": "git@github.com:frontier-forms/frontier-forms.git",

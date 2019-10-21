@@ -731,7 +731,6 @@ buffer-from@1.x, buffer-from@^1.0.0:
 builtin-modules@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/builtin-modules/-/builtin-modules-1.1.1.tgz#270f076c5a72c02f5b65a47df94c5fe3a278892f"
-  integrity sha1-Jw8HbFpywC9bZaR9+Uxf46J4iS8=
 
 cache-base@^1.0.1:
   version "1.0.1"
@@ -1215,7 +1214,6 @@ diff-sequences@^24.3.0:
 diff@^3.2.0:
   version "3.5.0"
   resolved "https://registry.yarnpkg.com/diff/-/diff-3.5.0.tgz#800c0dd1e0a8bfbc95835c202ad220fe317e5a12"
-  integrity sha512-A46qtFgd+g7pDZinpnwiRJtxbC1hpgf0uzP3iG89scHk0AUC7A1TGxf5OiiOUv/JMZR8GOt8hL900hV0bOy5xA==
 
 discontinuous-range@1.0.0:
   version "1.0.0"
@@ -1698,9 +1696,9 @@ graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2:
   version "4.1.15"
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.1.15.tgz#ffb703e1066e8a0eeaa4c8b80ba9253eeefbfb00"
 
-graphql-2-json-schema@^0.1.1:
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/graphql-2-json-schema/-/graphql-2-json-schema-0.1.1.tgz#77e1f9b2b9513bd38ac9e751e7e6f1096399a89f"
+graphql-2-json-schema@0.1.2-0:
+  version "0.1.2-0"
+  resolved "https://registry.yarnpkg.com/graphql-2-json-schema/-/graphql-2-json-schema-0.1.2-0.tgz#6a5508880fa09d20242ba3a27f221f6337a58fa2"
   dependencies:
     functional-json-schema "0.0.2-3"
     lodash "^4.17.10"
@@ -4123,7 +4121,6 @@ tslib@^1.8.0, tslib@^1.8.1, tslib@^1.9.3:
 tslint@^5.16.0:
   version "5.16.0"
   resolved "https://registry.yarnpkg.com/tslint/-/tslint-5.16.0.tgz#ae61f9c5a98d295b9a4f4553b1b1e831c1984d67"
-  integrity sha512-UxG2yNxJ5pgGwmMzPMYh/CCnCnh0HfPgtlVRDs1ykZklufFBL1ZoTlWFRz2NQjcoEiDoRp+JyT0lhBbbH/obyA==
   dependencies:
     "@babel/code-frame" "^7.0.0"
     builtin-modules "^1.1.1"
@@ -4142,7 +4139,6 @@ tslint@^5.16.0:
 tsutils@^2.29.0:
   version "2.29.0"
   resolved "https://registry.yarnpkg.com/tsutils/-/tsutils-2.29.0.tgz#32b488501467acbedd4b85498673a0812aca0b99"
-  integrity sha512-g5JVHCIJwzfISaXpXE1qvNalca5Jwob6FjI4AoPlqMusJ6ftFE7IkkFoMhVLRgK+4Kx3gkzb8UZK5t5yTTvEmA==
   dependencies:
     tslib "^1.8.1"
 

@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.2-2](https://github.com/frontier-forms/frontier-forms/compare/v0.1.2-1...v0.1.2-2) (2019-10-21)
+
+
+### Bug Fixes
+
+* **graphql:** update to graphql-2-json-schema@0.1.2-2 ([c54ef43](https://github.com/frontier-forms/frontier-forms/commit/c54ef43))
+
+
+
 ### [0.1.2-1](https://github.com/frontier-forms/frontier-forms/compare/v0.1.2-0...v0.1.2-1) (2019-10-21)
 
 

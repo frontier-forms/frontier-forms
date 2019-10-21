@@ -1696,9 +1696,9 @@ graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2:
   version "4.1.15"
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.1.15.tgz#ffb703e1066e8a0eeaa4c8b80ba9253eeefbfb00"
 
-graphql-2-json-schema@0.1.2-1:
-  version "0.1.2-1"
-  resolved "https://registry.yarnpkg.com/graphql-2-json-schema/-/graphql-2-json-schema-0.1.2-1.tgz#28f294e8ea5e423227d30e5cc8d4656a9faa6b87"
+graphql-2-json-schema@0.1.2-2:
+  version "0.1.2-2"
+  resolved "https://registry.yarnpkg.com/graphql-2-json-schema/-/graphql-2-json-schema-0.1.2-2.tgz#1f0ecd32d73414c946540e8bb09d602c1a1f56a9"
   dependencies:
     functional-json-schema "0.0.2-3"
     lodash "^4.17.10"

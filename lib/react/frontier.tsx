@@ -40,7 +40,7 @@ export interface FrontierProps extends FrontierDataProps {
   onSave?: (values: object) => void;
   resetOnSave?: boolean;
   order?: string[];
-
+  onReady?: () => void;
   children?: ({ modifiers, state, kit }: FrontierRenderProps) => JSX.Element;
 }
 
@@ -87,6 +87,9 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
             allFormSubscriptionItems
           )();
         }
+
+        // Form is ready
+        if (this.props.onReady) { this.props.onReady(); }
       }
     });
   }

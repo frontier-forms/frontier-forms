@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.2](https://github.com/frontier-forms/frontier-forms/compare/v0.1.1...v0.1.2) (2019-10-21)
+
+
+### Bug Fixes
+
+* **react:** added key to form children when using ui-kit ([c979fca](https://github.com/frontier-forms/frontier-forms/commit/c979fca)), closes [#29](https://github.com/frontier-forms/frontier-forms/issues/29)
+
+
+
 ### [0.1.1](https://github.com/frontier-forms/frontier-forms/compare/v0.1.0-6...v0.1.1) (2019-05-25)
 
 

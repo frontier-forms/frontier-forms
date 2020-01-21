@@ -20,7 +20,7 @@ export interface Modifiers {
   change: (value: any) => void; // tslint:disable-line no-any
   focus: () => void;
   blur: () => void;
-  save: () => ReturnType<typeof saveData>;
+  save: (e?: React.SyntheticEvent) => ReturnType<typeof saveData>;
 }
 
 // export type RenderPropsModifiersFieldObject = { [k: string]: RenderPropsModifiersFieldObject | Modifiers; }
@@ -182,9 +182,9 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
       set(
         modifiers,
         '.save',
-        (arg: string | React.SyntheticEvent) => {
-          if (!!(arg as React.SyntheticEvent).preventDefault) {
-            (arg as React.SyntheticEvent).preventDefault();
+        (e?: React.SyntheticEvent) => {
+          if (e && !!e.preventDefault) {
+            e.preventDefault();
           }
           this.form!.submit()
         }

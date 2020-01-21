@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.0.0-0](https://github.com/frontier-forms/frontier-forms/compare/v0.1.2...v1.0.0-0) (2020-01-21)
+
+
+### Features
+
+* **react:** add `modifiers.save()` API method as expected in docs ([017bfcf](https://github.com/frontier-forms/frontier-forms/commit/017bfcf97e25b0ea2106ed116753d62a83d6255c))
+* **react:** better DX for `modifiers.save()` ([a4a9d2d](https://github.com/frontier-forms/frontier-forms/commit/a4a9d2dc7221da72b407110841730e64f761cc69))
+* **react:** fixes on types ([00c264a](https://github.com/frontier-forms/frontier-forms/commit/00c264a1037c99322797a39c1d9ccf662d40e108))
+
 ### [0.1.2](https://github.com/frontier-forms/frontier-forms/compare/v0.1.1...v0.1.2) (2019-10-21)
 
 

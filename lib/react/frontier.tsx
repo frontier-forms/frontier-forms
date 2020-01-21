@@ -20,6 +20,7 @@ export interface Modifiers {
   change: (value: any) => void; // tslint:disable-line no-any
   focus: () => void;
   blur: () => void;
+  save: () => ReturnType<typeof saveData>
 }
 
 // export type RenderPropsModifiersFieldObject = { [k: string]: RenderPropsModifiersFieldObject | Modifiers; }
@@ -28,7 +29,7 @@ export interface Modifiers {
 // Component render props
 export interface FrontierRenderProps {
   form: FormApi;
-  state: FormState;
+  state: FormState<any>;
   modifiers: any; // tslint:disable-line no-any
   kit?: any; // tslint:disable-line no-any
 }
@@ -46,7 +47,7 @@ export interface FrontierProps extends FrontierDataProps {
 
 // Component state
 export interface FrontierState {
-  formState?: FormState;
+  formState?: FormState<any>;
 }
 
 const MODIFIERS_KEY: string[] = ['blur', 'focus'];
@@ -175,6 +176,13 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
             this.form!.change(fieldPath, arg as string);
           }
         }
+      );
+
+      // modifiers.save()
+      set(
+        modifiers,
+        '.save',
+        () => (this.form!.submit())
       );
     });
 

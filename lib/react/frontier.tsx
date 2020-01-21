@@ -29,7 +29,7 @@ export interface Modifiers {
 // Component render props
 export interface FrontierRenderProps {
   form: FormApi;
-  state: FormState<any>; // tslint:disable-line no-any
+  state: FormState;
   modifiers: any; // tslint:disable-line no-any
   kit?: any; // tslint:disable-line no-any
 }
@@ -47,7 +47,7 @@ export interface FrontierProps extends FrontierDataProps {
 
 // Component state
 export interface FrontierState {
-  formState?: FormState<any>; // tslint:disable-line no-any
+  formState?: FormState;
 }
 
 const MODIFIERS_KEY: string[] = ['blur', 'focus'];
@@ -182,7 +182,12 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
       set(
         modifiers,
         '.save',
-        () => (this.form!.submit())
+        (arg: string | React.SyntheticEvent) => {
+          if (!!(arg as React.SyntheticEvent).preventDefault) {
+            (arg as React.SyntheticEvent).preventDefault();
+          }
+          this.form!.submit()
+        }
       );
     });
 

@@ -186,7 +186,7 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
           if (e && !!e.preventDefault) {
             e.preventDefault();
           }
-          this.form!.submit()
+          this.form!.submit();
         }
       );
     });

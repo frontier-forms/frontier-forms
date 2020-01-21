@@ -20,6 +20,7 @@ export interface Modifiers {
   change: (value: any) => void; // tslint:disable-line no-any
   focus: () => void;
   blur: () => void;
+  save: (e?: React.SyntheticEvent) => ReturnType<typeof saveData>;
 }
 
 // export type RenderPropsModifiersFieldObject = { [k: string]: RenderPropsModifiersFieldObject | Modifiers; }
@@ -177,6 +178,18 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
           } else {
             this.form!.change(fieldPath, arg as string);
           }
+        }
+      );
+
+      // modifiers.save()
+      set(
+        modifiers,
+        '.save',
+        (e?: React.SyntheticEvent) => {
+          if (e && !!e.preventDefault) {
+            e.preventDefault();
+          }
+          this.form!.submit();
         }
       );
     });

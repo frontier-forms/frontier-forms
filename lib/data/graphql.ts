@@ -84,7 +84,7 @@ export function saveData (
         // FIXME: find a way to handle GQL errors on mutation arguments
         return {};
       } else {
-        return undefined; // submit succeed
+        return result; // submit succeed
       }
     });
   }

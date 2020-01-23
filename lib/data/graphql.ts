@@ -6,7 +6,7 @@ import { cloneDeep, get, has, map, merge, reduce, set } from 'lodash';
 import { introspectionQuery } from './introspectionQuery';
 
 export interface FrontierDataGraphQLProps {
-  mutation: DocumentNode;
+  mutation?: DocumentNode;
   client?: ApolloClient<any>; // tslint:disable-line no-any
   schema?: JSONSchema7;
   save?: (values: object) => Promise<undefined | object>;
@@ -69,15 +69,15 @@ export function saveData (
   props: FrontierDataGraphQLProps,
   values: object
 ): Promise<undefined | object> {
-  if (!props.client && props.mutation) {
+  if (props.save) {
+    return props.save(values);
+  } else if (!props.client && props.mutation) {
     // tslint:disable-next-line no-console
     console.error('Trying to save data with a mutation without providing an ApolloClient!');
     return Promise.reject({});
-  } else if (!props.mutation && props.save) {
-    return props.save(values);
   } else {
     return props.client!.mutate({
-      mutation: props.mutation,
+      mutation: props.mutation!,
       variables: values
     }).then(result => {
       if (result.errors) {
@@ -174,7 +174,7 @@ export function saveData (
 //       "end": 137
 //   }
 // }
-export function getMutationNameFromDocumentNode (mutation: DocumentNode): string | null {
+export function getMutationNameFromDocumentNode(mutation: DocumentNode): string | null {
   if (mutation.definitions.length > 1) {
     console.warn('please provide 1 mutation document');
     return null;
@@ -205,7 +205,7 @@ export function getMutationNameFromDocumentNode (mutation: DocumentNode): string
 }
 
 // Given a GraphQL schema JSON Schema and a mutation, return a form schema
-export function buildFormSchema (schema: JSONSchema7, mutationName: string): JSONSchema7 {
+export function buildFormSchema(schema: JSONSchema7, mutationName: string): JSONSchema7 {
   const mutationSchema = (schema.properties!.Mutation as JSONSchema7).properties![mutationName] as JSONSchema7;
   if (!mutationSchema) {
     console.warn(`Unknown mutation ${mutationName} provided`);
@@ -222,7 +222,7 @@ export function buildFormSchema (schema: JSONSchema7, mutationName: string): JSO
 }
 
 // tslint:disable-next-line typedef
-function formPropertiesReducer (schema, referenceSchema): JSONSchema7 {
+function formPropertiesReducer(schema, referenceSchema): JSONSchema7 {
   return {
     type: 'object',
     properties: reduce<JSONSchema7, { [k: string]: any }>( // tslint:disable-line no-any

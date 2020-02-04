@@ -52,116 +52,107 @@ export interface FrontierState {
 
 const MODIFIERS_KEY: string[] = ['blur', 'focus'];
 type componentGetter = (path: string, definition: JSONSchema7, required: boolean) => ComponentType<UIKITFieldProps>;
+export class Frontier extends Component<FrontierProps, FrontierState> {
+  state: FrontierState = {};
+  form?: FormApi;
+  schema?: JSONSchema7;
+  mutationName?: string;
+  mounted: boolean = false;
+  unsubformSubscription?: Unsubscribe;
 
-/**
- * Source code above is from `frontier.tsx`
- */
+  // Greatly inspired from the awesome https://github.com/final-form/react-final-form library
+  constructor(props: FrontierProps) {
+    super(props);
 
-/**
-  * Custom hooks
-  */
-function usePrevious(value: FrontierProps): FrontierProps | undefined {
-  const ref: React.MutableRefObject<FrontierProps | undefined> = React.useRef<FrontierProps>();
-  React.useEffect(() => {
-    ref.current = value;
-  });
-  return ref.current;
-}
-
-export function Frontier(props: FrontierProps): React.ReactNode {
-  const [state, setState] = React.useState<FrontierState>({});
-  const [form, setForm] = React.useState<FormApi>();
-  const [schema, setSchema] = React.useState<JSONSchema7>();
-  const [mutationName, setMutationName] = React.useState<string>();
-  const [mounted, setMounted] = React.useState<boolean>(false); // used in buildForm()
-  const [unsubformSubscription, setUnsubformSubscription] = React.useState<Unsubscribe>();
-
-  const onSubmit = (formValues: object) => {
-    const save = saveData(props, formValues);
-    save.then(() => {
-      if (props.resetOnSave === true) form!.reset();
-    });
-    return save;
+    this.buildForm();
   }
 
-  const buildForm = () => {
-    schemaFromDataProps(props).then(result => {
+  buildForm () {
+    schemaFromDataProps(this.props).then(result => {
       if (result) {
-        setSchema(result.schema);
-        setMutationName(result.mutationName);
+        this.schema = result.schema;
+        this.mutationName = result.mutationName;
 
-        setForm(getFormFromSchema(
+        this.form = getFormFromSchema(
           result.schema,
-          onSubmit,
-          props.initialValues || {}
-        ));
-
-        if (mounted && !unsubformSubscription) {
-          subscribeToForm();
+          this.onSubmit,
+          this.props.initialValues || {}
+        );
+        if (this.mounted && !this.unsubformSubscription) {
+          this.subscribeToForm();
         } else {
-          form!.subscribe(
+          // m: Why does this subscribe and unsubscribe?
+          this.form.subscribe(
             initialState => {
-              setState((prevState: FrontierState) => ({ ...prevState, formState: initialState }))
+              this.state = { formState: initialState };
             },
             allFormSubscriptionItems
           )();
         }
 
         // Form is ready
-        if (props.onReady) props.onReady();
+        if (this.props.onReady) { this.props.onReady(); }
       }
     });
-  };
+  }
 
-  const subscribeToForm = () => {
-    // subscribe to form and set unsubscribe function
-    const unsubformSubscription = form!.subscribe(
+  componentDidMount () {
+    // M: subscribed to final-form states when mounted
+    this.mounted = true;
+    if (this.form) {
+      this.subscribeToForm();
+    }
+  }
+
+  subscribeToForm () {
+    this.unsubformSubscription = this.form!.subscribe(
       formState => {
-        if (mounted) {
-          setState((prevState: FrontierState) => ({ ...prevState, formState }0);
+        if (this.mounted) {
+          this.setState({ formState });
         }
       },
       allFormSubscriptionItems
     );
-    setUnsubformSubscription(unsubformSubscription);
   }
 
-  React.useEffect(() => {
-    // From componentDidMount and componentWillMount
-    if (unsubformSubscription) {
-      unsubformSubscription();
-      setUnsubformSubscription(undefined);
+  componentWillMount () {
+    if (this.unsubformSubscription) {
+      this.unsubformSubscription();
+      this.unsubformSubscription = undefined;
     }
+    this.mounted = false;
+  }
 
-    setMounted(true);
-    if (form) subscribeToForm();
-  }, [] /* run only once */);
-
-
-  const prevProps: FrontierProps | undefined = usePrevious(props);
-
-  React.useEffect(() => {
-    /* From componentDidUpdate */
+  componentDidUpdate(prevProps: FrontierProps) {
     if (this.form) {
       // initialValues changed
-      if (!isEqual(props.initialValues, prevProps!.initialValues)) {
-        form!.initialize(props.initialValues || {});
+      if (!isEqual(this.props.initialValues, prevProps.initialValues)) {
+        this.form.initialize(this.props.initialValues || {});
       }
+
     }
     // if `mutation={}` changed, we rebuild the form
-    if (!isEqual(props.mutation, prevProps!.mutation)) {
-      if (unsubformSubscription) {
-        unsubformSubscription();
-        setUnsubformSubscription(undefined);
+    if (!isEqual(this.props.mutation, prevProps.mutation)) {
+      if (this.unsubformSubscription) {
+        this.unsubformSubscription();
+        this.unsubformSubscription = undefined;
       }
       // avoid re-render with previous mutation
-      setState((prevState) => ({ ...prevState, formState: undefined }));
-      buildForm();
+      this.setState({ formState: undefined }, () => this.buildForm());
     }
-  }, [props]);
+  }
 
-  /* TODO */
-  const renderProps: () => FrontierRenderProps = () => {
+  onSubmit = (formValues: object) => {
+    const save = saveData(this.props, formValues);
+    save.then(() => {
+      if (this.props.resetOnSave === true) {
+        this.form!.reset();
+      }
+    });
+    return save;
+  }
+
+  renderProps (): FrontierRenderProps {
     let modifiers: any = {}; // tslint:disable-line no-any
     let kit: any = {}; // tslint:disable-line no-any
 
@@ -175,7 +166,7 @@ export function Frontier(props: FrontierProps): React.ReactNode {
           modifiers,
           `${fieldPath}.${action}`,
           (...args) => {
-            form![action](fieldPath, ...args);
+            this.form![action](fieldPath, ...args);
           }
         );
       });
@@ -185,9 +176,9 @@ export function Frontier(props: FrontierProps): React.ReactNode {
         `${fieldPath}.change`,
         (arg: string | React.SyntheticEvent) => {
           if (!!(arg as React.SyntheticEvent).preventDefault) {
-            form!.change(fieldPath, (arg as any).currentTarget.value); // tslint:disable-line no-any
+            this.form!.change(fieldPath, (arg as any).currentTarget.value); // tslint:disable-line no-any
           } else {
-            form!.change(fieldPath, arg as string);
+            this.form!.change(fieldPath, arg as string);
           }
         }
       );
@@ -200,14 +191,14 @@ export function Frontier(props: FrontierProps): React.ReactNode {
           if (e && !!e.preventDefault) {
             e.preventDefault();
           }
-          form!.submit();
+          this.form!.submit();
         }
       );
     });
 
-    if (props.uiKit) {
+    if (this.props.uiKit) {
       visitSchema(
-        schema!,
+        this.schema!,
         (path, definition, required) => {
           set(
             kit,
@@ -217,44 +208,43 @@ export function Frontier(props: FrontierProps): React.ReactNode {
               return <FieldComponent {...state!} {...props} />;
             });
         },
-        schema!.required || []
+        this.schema!.required || []
       );
     }
 
     return {
-      form: form!,
-      state: state.formState!,
+      form: this.form!,
+      state: this.state.formState!,
       modifiers,
       kit,
     };
   }
-
-  /* TODO */
-  const uiKitComponentFor: componentGetter = memoize(
+  
+  uiKitComponentFor: componentGetter = memoize(
     (path: string, definition: JSONSchema7, required: boolean) =>
-      // tslint:disable-next-line no-any
-      props.uiKit!.__reducer(`${mutationName!}.${path}`, definition.type as any, required),
+    // tslint:disable-next-line no-any
+      this.props.uiKit!.__reducer(`${this.mutationName!}.${path}`, definition.type as any, required),
     // custom cache key resolver
     (path: string, definition: JSONSchema7, _required: boolean) => `${this.mutationName!}.${path}-${definition.type}`
   );
 
-  const renderWithKit = () => {
+  renderWithKit () {
     let fields: { [k: string]: JSX.Element } = {};
 
     visitSchema(
-      schema!,
+      this.schema!,
       (path, definition, required) => {
-        const state = form!.getFieldState(path);
-        const FieldComponent = uiKitComponentFor(path, definition, required);
+        const state = this.form!.getFieldState(path);
+        const FieldComponent = this.uiKitComponentFor(path, definition, required);
         fields[path] = <FieldComponent {...state!} key={path} />;
       },
-      schema!.required || []
+      this.schema!.required || []
     );
 
     // Sorting fields if an `order` is provided
-    if (props.order) {
+    if (this.props.order) {
       let sortedFields = {};
-      each(props.order, (orderedPath: string) => {
+      each(this.props.order, (orderedPath: string) => {
         sortedFields[orderedPath] = fields[orderedPath];
         delete fields[orderedPath];
       });
@@ -265,35 +255,33 @@ export function Frontier(props: FrontierProps): React.ReactNode {
       fields = sortedFields;
     }
 
-    return props.uiKit!.__wrapWithForm(form!, values(fields));
+    return this.props.uiKit!.__wrapWithForm(this.form!, values(fields));
   }
 
+  render () {
+    if (!this.state.formState) {
+      return null; // TODO: do render with renderprops and pass a `loading` flag
+    }
 
-  buildForm();
-
-  /* TODO: Return placeholder component for null value */
-  if (!state.formState) {
-    return null; // TODO: do render with renderprops and pass a `loading` flag
-  }
-
-  const child = props.children;
-  if (child) {
-    if (typeof child !== 'function') {
+    const child = this.props.children;
+    if (child) {
+      if (typeof child !== 'function') {
+        // tslint:disable-next-line no-console
+        console.error(
+          `Warning: Must specify a render function as children, received "${typeof child}"`
+        );
+        return null;
+      } else {
+        return child(this.renderProps());
+      }
+    } else if (this.props.uiKit) {
+      return this.renderWithKit();
+    } else {
       // tslint:disable-next-line no-console
       console.error(
-        `Warning: Must specify a render function as children, received "${typeof child}"`
+        `Warning: Must specify either a render function as children or give a \`uiKit=\` props`
       );
       return null;
-    } else {
-      return child(renderProps());
     }
-  } else if (props.uiKit) {
-    return renderWithKit();
-  } else {
-    // tslint:disable-next-line no-console
-    console.error(
-      `Warning: Must specify either a render function as children or give a \`uiKit=\` props`
-    );
-    return null;
   }
 }

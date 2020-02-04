@@ -64,7 +64,7 @@ function usePrevious(value: FrontierProps): FrontierProps | undefined {
   React.useEffect(() => {
     ref.current = value;
   });
-  return ref.current;
+  return ref.current || value;  // For first iteration
 }
 
 export const Frontier = (props: FrontierProps) => {
@@ -90,18 +90,21 @@ export const Frontier = (props: FrontierProps) => {
           setSchema(result.schema);
           setMutationName(result.mutationName);
 
-          setForm(getFormFromSchema(
+          const formGen = getFormFromSchema(
             result.schema,
             onSubmit,
             props.initialValues || {}
-          ));
+          );
+
+          setForm(formGen);
 
           if (mounted && !unsubformSubscription) {
             subscribeToForm();
           } else {
-            form!.subscribe(
+            console.log("subscribing to form to initialize state")
+            formGen!.subscribe(
               initialState => {
-                setState((prevState: FrontierState) => ({ ...prevState, formState: initialState }))
+                updateFormState(initialState);
               },
               allFormSubscriptionItems
             )();
@@ -113,12 +116,17 @@ export const Frontier = (props: FrontierProps) => {
       });
   };
 
+  const updateFormState = (formState) => {
+    setState((prevState: FrontierState) => ({ ...prevState, formState }));
+  }
+
   const subscribeToForm = () => {
     // subscribe to form and set unsubscribe function
+    console.log("subscribing to form")
     const unsubformSubscription = form!.subscribe(
       formState => {
         if (mounted) {
-          setState((prevState: FrontierState) => ({ ...prevState, formState }));
+          updateFormState(formState);
         }
       },
       allFormSubscriptionItems
@@ -127,7 +135,9 @@ export const Frontier = (props: FrontierProps) => {
   }
 
   React.useEffect(() => {
+    console.log("before build form")
     buildForm();
+    console.log("after build form")
 
     // From componentDidMount and componentWillMount
     if (unsubformSubscription) {
@@ -144,7 +154,8 @@ export const Frontier = (props: FrontierProps) => {
 
   React.useEffect(() => {
     /* From componentDidUpdate */
-    if (this.form) {
+    console.log("before initialize form")
+    if (form) {
       // initialValues changed
       if (!isEqual(props.initialValues, prevProps!.initialValues)) {
         form!.initialize(props.initialValues || {});
@@ -152,6 +163,7 @@ export const Frontier = (props: FrontierProps) => {
     }
     // if `mutation={}` changed, we rebuild the form
     if (!isEqual(props.mutation, prevProps!.mutation)) {
+      console.log("before rebuilding form")
       if (unsubformSubscription) {
         unsubformSubscription();
         setUnsubformSubscription(undefined);
@@ -268,10 +280,11 @@ export const Frontier = (props: FrontierProps) => {
     return props.uiKit!.__wrapWithForm(form!, values(fields));
   }
 
-  let returnValue: any;
+  let returnValue: any = null;
 
-  /* TODO: Return placeholder component for null value */
+  console.log("before rendering ui")
   if (form) {
+    console.log("before rendering ui after form is ready")
     if (!state.formState) {
       returnValue = null; // TODO: do render with renderprops and pass a `loading` flag
     }
@@ -297,6 +310,7 @@ export const Frontier = (props: FrontierProps) => {
       returnValue = null;
     }
   }
+  console.log("after rendering ui")
 
   return returnValue as React.ReactElement<any>;
 }

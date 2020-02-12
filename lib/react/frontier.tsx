@@ -1,7 +1,7 @@
-import { FormApi, FormState, FormSubscription, formSubscriptionItems, Unsubscribe, setIn } from 'final-form';
+import { FormApi, FormState, FormSubscription, formSubscriptionItems, Unsubscribe } from 'final-form';
 import { JSONSchema7 } from 'json-schema';
 import { each, memoize, set, values } from 'lodash';
-import * as React from "react";  // tslint:disable-line no-duplicate-imports
+import * as React from 'react';  // tslint:disable-line no-duplicate-imports
 import { getFormFromSchema, visitSchema } from '../core/core';
 import { FrontierDataProps, schemaFromDataProps } from '../data';
 import { saveData } from '../data/graphql';
@@ -42,10 +42,10 @@ export interface FrontierProps extends FrontierDataProps {
 }
 
 const MODIFIERS_KEY: string[] = ['blur', 'focus'];
-type componentGetter = (path: string, definition: JSONSchema7, required: boolean) => React.ComponentType<UIKITFieldProps>;
+type componentGetter = (path: string, definition: JSONSchema7, required: boolean) =>
+  React.ComponentType<UIKITFieldProps>;
 
-
-export function Frontier(props: FrontierProps): any {
+export function Frontier(props: FrontierProps) {
   const [formState, setFormState] = React.useState<FormState>();
 
   const schema = React.useRef<JSONSchema7>();
@@ -54,8 +54,16 @@ export function Frontier(props: FrontierProps): any {
   const unsubscribeFn = React.useRef<Unsubscribe>();
   const initialized = React.useRef<Boolean>(false);
 
+  const onSubmit = React.useCallback((formValues: Object) => {
+    const save = saveData(props, formValues);
+    save.then(() => {
+      if (props.resetOnSave) { form.current!.reset(); }
+    });
+    return save;
+  }, []);
+
   React.useEffect(() => {
-    schemaFromDataProps(props).then((result) => {
+    schemaFromDataProps(props).then(result => {
       if (result) {
         schema.current = result.schema;
         mutationName.current = result.mutationName;
@@ -68,12 +76,12 @@ export function Frontier(props: FrontierProps): any {
 
         unsubscribeFn.current = form.current!.subscribe(
           /* subscriber, called when values in subscription change*/
-          (formState: FormState) => {
-            setFormState(formState);
+          (_formState: FormState) => {
+            setFormState(_formState);
           },
           /* subscription */ allFormSubscriptionItems
         );
-  
+
         initialized.current = true;
         if (props.onReady) { props.onReady(); }
       }
@@ -88,7 +96,7 @@ export function Frontier(props: FrontierProps): any {
   React.useEffect(() => {
     return () => {
       // Unsubscribe
-      if (unsubscribeFn.current) { unsubscribeFn.current();}
+      if (unsubscribeFn.current) { unsubscribeFn.current(); }
       unsubscribeFn.current = undefined;
     };
   }, [mutationName]);
@@ -100,14 +108,6 @@ export function Frontier(props: FrontierProps): any {
     }
   }, [props.initialValues]);
 
-  const onSubmit = React.useCallback((formValues: Object) => {
-    const save = saveData(props, formValues);
-    save.then(() => {
-      if (props.resetOnSave) { form.current!.reset(); }
-    });
-    return save;
-  }, []);
-
   // Revisit this
   const uiKitComponentFor: componentGetter = React.useCallback(memoize(
     (path: string, definition: JSONSchema7, required: boolean) =>
@@ -118,19 +118,19 @@ export function Frontier(props: FrontierProps): any {
   ), []);
 
   const renderProps = React.useCallback(() => {
-    let modifiers: any = {};
-    let kit: any = {};
+    let modifiers: any = {};  // tslint:disable-line no-any
+    let kit: any = {}; // tslint:disable-line no-any
 
     /**
      * for each field, create a `<field>.(change|blur|focus)` modifier function
      */
     const fields = form.current!.getRegisteredFields();
-    each(fields, (fieldPath) => {
-      each(MODIFIERS_KEY, (action) => {
+    each(fields, fieldPath => {
+      each(MODIFIERS_KEY, action => {
         set(
           modifiers,
-          /* key */ `${fieldPath}.${action}`,
-          /* value */(...args) => {
+          `${fieldPath}.${action}`,
+          (...args) => {
             form.current![action](fieldPath, ...args);
           }
         );
@@ -165,10 +165,10 @@ export function Frontier(props: FrontierProps): any {
           set(
             kit,
             path,
-            props => {
+            _props => {
               const state = form.current!.getFieldState(path);
               const FieldComponent = uiKitComponentFor(path, definition, required);
-              return <FieldComponent {...state!} {...props} />;
+              return <FieldComponent {...state!} {..._props} />;
             });
         },
         schema.current!.required || []
@@ -180,7 +180,7 @@ export function Frontier(props: FrontierProps): any {
       modifiers,
       kit,
     };
-  }, [form, /* maybe? props.uiKit */]);
+  }, [form.current]);
 
   const renderWithKit = React.useCallback(() => {
     let fields: { [k: string]: JSX.Element; } = {};
@@ -210,7 +210,7 @@ export function Frontier(props: FrontierProps): any {
     }
 
     return props.uiKit!.__wrapWithForm(form.current!, values(fields));
-  }, [form, /* maybe? props.Order */]);
+  }, [form.current]);
 
   if (form.current && initialized.current) {
     if (!formState) {

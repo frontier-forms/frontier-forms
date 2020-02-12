@@ -219,7 +219,7 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
       kit,
     };
   }
-  
+
   uiKitComponentFor: componentGetter = memoize(
     (path: string, definition: JSONSchema7, required: boolean) =>
     // tslint:disable-next-line no-any

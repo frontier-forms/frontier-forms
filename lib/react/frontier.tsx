@@ -45,7 +45,8 @@ const MODIFIERS_KEY: string[] = ['blur', 'focus'];
 type componentGetter = (path: string, definition: JSONSchema7, required: boolean) =>
   React.ComponentType<UIKITFieldProps>;
 
-export function Frontier(props: FrontierProps) {
+// tslint:disable-next-line no-any
+export function Frontier(props: FrontierProps): any /* FIXME */ {
   const [formState, setFormState] = React.useState<FormState>();
 
   const schema = React.useRef<JSONSchema7>();
@@ -99,7 +100,7 @@ export function Frontier(props: FrontierProps) {
       if (unsubscribeFn.current) { unsubscribeFn.current(); }
       unsubscribeFn.current = undefined;
     };
-  }, [mutationName]);
+  }, [props.mutation]);
 
   React.useEffect(() => {
     if (form.current) {
@@ -112,9 +113,9 @@ export function Frontier(props: FrontierProps) {
   const uiKitComponentFor: componentGetter = React.useCallback(memoize(
     (path: string, definition: JSONSchema7, required: boolean) =>
       // tslint:disable-next-line no-any
-      props.uiKit!.__reducer(`${mutationName!}.${path}`, definition.type as any, required),
+      props.uiKit!.__reducer(`${mutationName.current!}.${path}`, definition.type as any, required),
     // custom cache key resolver
-    (path: string, definition: JSONSchema7, _required: boolean) => `${mutationName!}.${path}-${definition.type}`
+    (path: string, definition: JSONSchema7, _required: boolean) => `${mutationName.current!}.${path}-${definition.type}`
   ), []);
 
   const renderProps = React.useCallback(() => {

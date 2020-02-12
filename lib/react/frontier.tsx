@@ -1,11 +1,17 @@
-import { FormApi, FormState, FormSubscription, formSubscriptionItems, Unsubscribe } from 'final-form';
+/**
+ * TODO FIXME
+ * Boolean value doesn't change
+ */
+
+import { FormApi, FormState, FormSubscription, formSubscriptionItems, Unsubscribe, setIn } from 'final-form';
 import { JSONSchema7 } from 'json-schema';
 import { each, isEqual, memoize, set, values } from 'lodash';
 import * as React from "react";  // tslint:disable-line no-duplicate-imports
 import { getFormFromSchema, visitSchema } from '../core/core';
 import { FrontierDataProps, schemaFromDataProps } from '../data';
-import { saveData } from '../data/graphql';
+import { saveData, buildFormSchema } from '../data/graphql';
 import { UIKitAPI, UIKITFieldProps } from '../ui-kit';
+import { DocumentNode } from 'graphql';
 
 export const allFormSubscriptionItems: FormSubscription = formSubscriptionItems.reduce(
   (result, key) => {
@@ -67,136 +73,114 @@ function usePrevious(value: FrontierProps): FrontierProps | undefined {
   return ref.current || value;  // For first iteration
 }
 
-export const Frontier = (props: FrontierProps) => {
-  const [state, setState] = React.useState<FrontierState>({});
-  const [form, setForm] = React.useState<FormApi>();
+export function Frontier (props: FrontierProps): any {
   const [schema, setSchema] = React.useState<JSONSchema7>();
-  const [mutationName, setMutationName] = React.useState<string>();
-  const [mounted, setMounted] = React.useState<boolean>(false); // used in buildForm()
-  const [unsubformSubscription, setUnsubformSubscription] = React.useState<Unsubscribe>();
+  const [mutationName, setMutationName] = React.useState<String>();
+  const [form, setForm] = React.useState<FormApi>();
+  const [formState, setFormState] = React.useState<FormState>();
+  const [unsubscribeFn, setUnsubscribeFn] = React.useState<Unsubscribe>();
+  const [initialized, setInitialized] = React.useState<Boolean>(false);
 
-  const onSubmit = (formValues: object) => {
+  // From props
+  const [initialValues, setInitialValues] = React.useState<Object>(props.initialValues || {});
+  const [mutation, setMutation] = React.useState<DocumentNode>(props.mutation)
+
+  async function buildForm() {
+    const result = await schemaFromDataProps(props)
+    if (result) {
+      const form = getFormFromSchema(
+        /* schema */ result.schema, 
+        /* onSubmit */ onSubmit, 
+        /* initialValues */ initialValues
+      );
+      
+      setSchema(result.schema);
+      setMutationName(result.mutationName);
+      setForm(form)
+    }
+  }
+  
+  if (!initialized) {
+    buildForm();
+    setInitialized(true);
+  }
+
+  React.useEffect(() => {
+    /**
+     * This hook is called after form is built and component is mounted
+     */
+    const unsubscribeFn = form!.subscribe(
+      /* subscriber, called when values in subscription change*/ (formState: FormState) => setFormState(formState),
+      /* subscription */ allFormSubscriptionItems
+    );
+    setUnsubscribeFn(unsubscribeFn)
+
+    if (props.onReady) { props.onReady(); }
+
+    return () => {
+      unsubscribeFn()
+      setUnsubscribeFn(undefined);
+    }
+  },[/*form is set*/ form, /*mutation name is changed*/mutationName])
+
+  React.useEffect(() => {
+    if (form) {
+      if (!isEqual(props.initialValues, initialValues)) {
+        // Reinitialize form when initialValues change
+        setInitialValues(props.initialValues || {})
+        form.initialize(initialValues);
+      }
+    }
+  }, [form])
+
+  React.useEffect(() => {
+    // if `mutation = {}` changed, rebuild the form
+    if (!isEqual(props.mutation, mutation)) {
+      buildForm();
+      setMutation(props.mutation);
+    }
+  }, [mutationName])
+
+  const onSubmit = React.useCallback((formValues: Object) => {
     const save = saveData(props, formValues);
     save.then(() => {
-      if (props.resetOnSave === true) form!.reset();
+      if(props.resetOnSave) {form!.reset()}
     });
     return save;
-  }
+  }, [])
 
-  const buildForm = () => {
-    schemaFromDataProps(props)
-      .then(result => {
-        if (result) {
-          setSchema(result.schema);
-          setMutationName(result.mutationName);
+  // Revisit this
+  const uiKitComponentFor: componentGetter = React.useCallback(memoize(
+    (path: string, definition: JSONSchema7, required: boolean) =>
+    // tslint:disable-next-line no-any
+      props.uiKit!.__reducer(`${mutationName!}.${path}`, definition.type as any, required),
+    // custom cache key resolver
+    (path: string, definition: JSONSchema7, _required: boolean) => `${mutationName!}.${path}-${definition.type}`
+  ), [mutationName]);
 
-          const formGen = getFormFromSchema(
-            result.schema,
-            onSubmit,
-            props.initialValues || {}
-          );
+  const renderProps = React.useCallback(() => {
+    let modifiers: any = {};
+    let kit: any = {};
 
-          setForm(formGen);
-
-          if (mounted && !unsubformSubscription) {
-            subscribeToForm();
-          } else {
-            console.log("subscribing to form to initialize state")
-            formGen!.subscribe(
-              initialState => {
-                updateFormState(initialState);
-              },
-              allFormSubscriptionItems
-            )();
-          }
-
-          // Form is ready
-          if (props.onReady) props.onReady();
-        }
-      });
-  };
-
-  const updateFormState = (formState) => {
-    setState((prevState: FrontierState) => ({ ...prevState, formState }));
-  }
-
-  const subscribeToForm = () => {
-    // subscribe to form and set unsubscribe function
-    console.log("subscribing to form")
-    const unsubformSubscription = form!.subscribe(
-      formState => {
-        if (mounted) {
-          updateFormState(formState);
-        }
-      },
-      allFormSubscriptionItems
-    );
-    setUnsubformSubscription(unsubformSubscription);
-  }
-
-  React.useEffect(() => {
-    console.log("before build form")
-    buildForm();
-    console.log("after build form")
-
-    // From componentDidMount and componentWillMount
-    if (unsubformSubscription) {
-      unsubformSubscription();
-      setUnsubformSubscription(undefined);
-    }
-
-    setMounted(true);
-    if (form) subscribeToForm();
-  }, [] /* run only once */);
-
-
-  const prevProps: FrontierProps | undefined = usePrevious(props);
-
-  React.useEffect(() => {
-    /* From componentDidUpdate */
-    console.log("before initialize form")
-    if (form) {
-      // initialValues changed
-      if (!isEqual(props.initialValues, prevProps!.initialValues)) {
-        form!.initialize(props.initialValues || {});
-      }
-    }
-    // if `mutation={}` changed, we rebuild the form
-    if (!isEqual(props.mutation, prevProps!.mutation)) {
-      console.log("before rebuilding form")
-      if (unsubformSubscription) {
-        unsubformSubscription();
-        setUnsubformSubscription(undefined);
-      }
-      // avoid re-render with previous mutation
-      setState((prevState) => ({ ...prevState, formState: undefined }));
-      buildForm();
-    }
-  }, [props]);
-
-  const renderProps: () => FrontierRenderProps = () => {
-    let modifiers: any = {}; // tslint:disable-line no-any
-    let kit: any = {}; // tslint:disable-line no-any
-
-    // for each field, create a `<field>.(change|blur|focus)` modifier function
+    /**
+     * for each field, create a `<field>.(change|blur|focus)` modifier function
+     */
     const fields = form!.getRegisteredFields();
-
-    each(fields, fieldPath => {
-      // set modifiers
-      each(MODIFIERS_KEY, action => {
+    fields.forEach((fieldPath) => {
+      MODIFIERS_KEY.forEach((action) => {
         set(
           modifiers,
-          `${fieldPath}.${action}`,
-          (...args) => {
+          /* key */ `${fieldPath}.${action}`,
+          /* value */ (...args) => {
             form![action](fieldPath, ...args);
           }
-        );
+        )
       });
 
       set(
         modifiers,
-        `${fieldPath}.change`,
-        (arg: string | React.SyntheticEvent) => {
+        /* key */ `${fieldPath}.change`,
+        /* value */ (arg: string | React.SyntheticEvent) => {
           if (!!(arg as React.SyntheticEvent).preventDefault) {
             form!.change(fieldPath, (arg as any).currentTarget.value); // tslint:disable-line no-any
           } else {
@@ -205,19 +189,16 @@ export const Frontier = (props: FrontierProps) => {
         }
       );
 
-      // modifiers.save()
       set(
         modifiers,
         '.save',
         (e?: React.SyntheticEvent) => {
-          if (e && !!e.preventDefault) {
-            e.preventDefault();
-          }
+          if (e && !!e.preventDefault) { e.preventDefault(); }
           form!.submit();
         }
       );
-    });
-
+    });  
+    
     if (props.uiKit) {
       visitSchema(
         schema!,
@@ -233,24 +214,15 @@ export const Frontier = (props: FrontierProps) => {
         schema!.required || []
       );
     }
-
     return {
       form: form!,
-      state: state.formState!,
+      state: formState!,
       modifiers,
       kit,
     };
-  }
+  }, [form, /* maybe? props.uiKit */])
 
-  const uiKitComponentFor: componentGetter = memoize(
-    (path: string, definition: JSONSchema7, required: boolean) =>
-      // tslint:disable-next-line no-any
-      props.uiKit!.__reducer(`${mutationName!}.${path}`, definition.type as any, required),
-    // custom cache key resolver
-    (path: string, definition: JSONSchema7, _required: boolean) => `${mutationName!}.${path}-${definition.type}`
-  );
-
-  const renderWithKit = () => {
+  const renderWithKit = React.useCallback(() => {
     let fields: { [k: string]: JSX.Element } = {};
 
     visitSchema(
@@ -278,39 +250,35 @@ export const Frontier = (props: FrontierProps) => {
     }
 
     return props.uiKit!.__wrapWithForm(form!, values(fields));
-  }
+  }, [form, /* maybe? props.Order */])
 
-  let returnValue: any = null;
-
-  console.log("before rendering ui")
-  if (form) {
-    console.log("before rendering ui after form is ready")
-    if (!state.formState) {
-      returnValue = null; // TODO: do render with renderprops and pass a `loading` flag
+  if(initialized) {
+    if (!formState){
+      // TODO: do render with renderprops and pass a `loading` flag
+      return null;
     }
 
-    const child = props.children;
-    if (child) {
-      if (typeof child !== 'function') {
+    const children = props.children;
+    if (children) {
+      if (typeof children !== 'function') {
         // tslint:disable-next-line no-console
         console.error(
-          `Warning: Must specify a render function as children, received "${typeof child}"`
+          `Warning: Must specify a render function as children, received "${typeof children}"`
         );
-        returnValue = null;
+        return null;
       } else {
-        returnValue = child(renderProps());
+        return children(renderProps());
       }
     } else if (props.uiKit) {
-      returnValue = renderWithKit();
+      return renderWithKit();
     } else {
       // tslint:disable-next-line no-console
       console.error(
         `Warning: Must specify either a render function as children or give a \`uiKit=\` props`
       );
-      returnValue = null;
+      return null;
     }
   }
-  console.log("after rendering ui")
 
-  return returnValue as React.ReactElement<any>;
+  return null;
 }

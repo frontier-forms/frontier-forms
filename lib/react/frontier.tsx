@@ -151,7 +151,7 @@ export function Frontier(props: FrontierProps): any /* FIXME */ {
 
       set(
         modifiers,
-        '.save',
+        'save',
         (e?: React.SyntheticEvent) => {
           if (e && !!e.preventDefault) { e.preventDefault(); }
           form.current!.submit();

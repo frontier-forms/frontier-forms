@@ -86,7 +86,7 @@ export function saveData (
       } else {
         return result; // submit succeed
       }
-    });
+    }).catch((e) => props.onErrorHandler ? props.onErrorHandler(e) : console.error(e))
   }
 }
 

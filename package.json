@@ -13,7 +13,9 @@
     "build": "tsc",
     "tslint": "tslint --project tsconfig.json --config tslint.json",
     "tslint:fix": "tslint --project tsconfig.json --fix --config tslint.json",
-    "release": "tsc; standard-version"
+    "release": "tsc; standard-version",
+    "prepare": "npm run build"
+    
   },
   "dependencies": {
     "ajv": "^6.10.0",

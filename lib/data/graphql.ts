@@ -1,4 +1,4 @@
-import { ApolloClient } from 'apollo-client';
+import { ApolloClient } from '@apollo/client';
 import { DocumentNode, FieldNode } from 'graphql';
 import { fromIntrospectionQuery } from 'graphql-2-json-schema';
 import { JSONSchema7 } from 'json-schema';
@@ -35,7 +35,7 @@ export function schemaFromGraphQLProps (props: FrontierDataGraphQLProps): Promis
           return null;
         } else {
 
-          const mutationType = result.data.__schema.mutationType.name ?? 'Mutation';
+          const mutationType = result.data.__schema.mutationType.name ? result.data.__schema.mutationType.name : 'Mutation';
           const schema = fromIntrospectionQuery(result.data) as JSONSchema7;
           // FIXME: update "graphql-2-json-schema" to generate JSONSchema7
           schema.$schema = 'http://json-schema.org/draft-07/schema#';

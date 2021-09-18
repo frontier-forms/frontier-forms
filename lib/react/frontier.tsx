@@ -113,7 +113,7 @@ export class Frontier extends Component<FrontierProps, FrontierState> {
     );
   }
 
-  componentWillMount () {
+  UNSAFE_componentWillMount () {
     if (this.unsubformSubscription) {
       this.unsubformSubscription();
       this.unsubformSubscription = undefined;

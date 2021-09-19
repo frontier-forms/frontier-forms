@@ -1,4 +1,4 @@
-import { ApolloClient } from 'apollo-client';
+import { ApolloClient } from '@apollo/client';
 import { DocumentNode, FieldNode } from 'graphql';
 import { fromIntrospectionQuery } from 'graphql-2-json-schema';
 import { JSONSchema7 } from 'json-schema';
@@ -34,11 +34,13 @@ export function schemaFromGraphQLProps (props: FrontierDataGraphQLProps): Promis
           console.log(`Unable to fetch GraphQL schema: ${result.errors}`);
           return null;
         } else {
+
+          const mutationType = result.data.__schema.mutationType.name ? result.data.__schema.mutationType.name : 'Mutation';
           const schema = fromIntrospectionQuery(result.data) as JSONSchema7;
           // FIXME: update "graphql-2-json-schema" to generate JSONSchema7
           schema.$schema = 'http://json-schema.org/draft-07/schema#';
           return {
-            schema: schemaWithFormats(buildFormSchema(schema, mutationName), props.formats || {}),
+            schema: schemaWithFormats(buildFormSchema(schema, mutationName, mutationType), props.formats || {}),
             mutationName
           };
         }
@@ -204,9 +206,9 @@ export function getMutationNameFromDocumentNode (mutation: DocumentNode): string
   }
 }
 
-// Given a GraphQL schema JSON Schema and a mutation, return a form schema
-export function buildFormSchema (schema: JSONSchema7, mutationName: string): JSONSchema7 {
-  const mutationSchema = (schema.properties!.Mutation as JSONSchema7).properties![mutationName] as JSONSchema7;
+// Given a GraphQL schema JSON Schema, a mutation, and an optional MutationType return a form schema
+export function buildFormSchema (schema: JSONSchema7, mutationName: string, mutationType: string = "Mutation"): JSONSchema7 {
+  const mutationSchema = (schema.properties![mutationType] as JSONSchema7).properties![mutationName] as JSONSchema7;
   if (!mutationSchema) {
     console.warn(`Unknown mutation ${mutationName} provided`);
     return {};
